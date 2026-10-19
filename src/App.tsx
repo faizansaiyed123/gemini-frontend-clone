@@ -618,7 +618,7 @@ function App() {
         <div className="history-search-wrap"><Search size={15} /><input id="history-search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search conversations" /></div>
         <div className="chat-history">
           {filteredRooms.length > 0 ? filteredRooms.map(room => (
-            <button key={room.chatroom_id} className={activeChatId === room.chatroom_id ? 'history-item selected' : 'history-item'} onClick={() => selectRoom(room.chatroom_id} title={room.name}>
+            <button key={room.chatroom_id} className={activeChatId === room.chatroom_id ? 'history-item selected' : 'history-item'} onClick={() => selectRoom(room.chatroom_id)} title={room.name}>
               <MessageCircle size={16} /><span>{room.name || 'Untitled conversation'}</span>
               {activeChatId === room.chatroom_id && <span className="history-active-dot" />}
             </button>

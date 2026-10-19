@@ -445,6 +445,13 @@ function App() {
   }, [activeChatId, token, notify])
 
   useEffect(() => {
+    const element = textareaRef.current
+    if (!element) return
+    element.style.height = 'auto'
+    element.style.height = `${Math.min(element.scrollHeight, 160)}px`
+  }, [draft])
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [messages, waitingForReply])
 

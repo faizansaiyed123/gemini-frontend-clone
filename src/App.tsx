@@ -17,7 +17,7 @@ type ChatMessage = { message_id: string; content: string; sender: 'user' | 'ai' 
 type ChatDetail = { chatroom_id: string; name: string; created_at: string; messages: ChatMessage[] }
 type Profile = { user_id: string; mobile: string; full_name?: string | null; is_verified?: boolean; created_at?: string }
 type AuthMode = 'signin' | 'signup' | 'forgot'
-type AuthProps = { onAuthenticated: (token: string) => void; initialMode?: AuthMode }
+type AuthProps = { onAuthenticated: (token: string) => void; initialMode?: AuthMode; onBackToHome?: () => void }
 
 async function api<T>(path: string, init: RequestInit = {}, tokenOverride?: string): Promise<T> {
   const token = tokenOverride ?? window.localStorage.getItem(TOKEN_KEY) ?? ''
@@ -56,7 +56,7 @@ function BrandMark({ small = false }: { small?: boolean }) {
   )
 }
 
-function AuthView({ onAuthenticated, initialMode = 'signin' }: AuthProps) {
+function AuthView({ onAuthenticated, initialMode = 'signin', onBackToHome }: AuthProps) {
   const [mode, setMode] = useState<AuthMode>(initialMode)
   const [mobile, setMobile] = useState('')
   const [fullName, setFullName] = useState('')
@@ -204,6 +204,7 @@ function AuthView({ onAuthenticated, initialMode = 'signin' }: AuthProps) {
 
   return (
     <main className="auth-page">
+      {onBackToHome && <button className="auth-home-button" type="button" onClick={onBackToHome}><ArrowLeft size={15} /> Back to home</button>}
       <section className="auth-showcase">
         <div className="auth-showcase-top">
           <div className="brand-lockup"><BrandMark /><span>Gemini</span></div>
@@ -656,7 +657,10 @@ function App() {
   if (isLoading) {
     return <main className="loading-screen"><BrandMark /><div className="loading-orbit" /><p>Opening your workspace…</p></main>
   }
-  if (!token) return <AuthView onAuthenticated={authenticated} />
+  if (!token) {
+    if (!authMode) return <LandingView onStart={setAuthMode} />
+    return <AuthView key={authMode} initialMode={authMode} onAuthenticated={authenticated} onBackToHome={() => setAuthMode(null)} />
+  }
 
   return (
     <main className="app-shell">

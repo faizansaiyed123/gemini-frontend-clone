@@ -401,7 +401,7 @@ function App() {
           api<{ subscription_tier?: string }>('/subscribe/subscription/status'),
         ])
         if (cancelled) return
-        if (results[1].status === 'fulfilled') setTier(results[1].value?.subscription_tier || 'basic')
+        if (results[1].status === 'fulfilled') setTier((results[1].value as { subscription_tier?: string })?.subscription_tier || 'basic')
         if (window.location.pathname === '/payment/success') {
           notify('Payment complete. Your subscription status has been refreshed.')
           window.history.replaceState({}, '', '/')

@@ -24,10 +24,10 @@ async function api<T>(path: string, init: RequestInit = {}, tokenOverride?: stri
   const headers = new Headers(init.headers)
   headers.set('Accept', 'application/json')
   if (init.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
-  if (token) headers.set('Authorization', \`Bearer \${token}\`)
+  if (token) headers.set('Authorization', `Bearer ${token}`)
   let response: Response
   try {
-    response = await fetch(\`\${API_BASE}\${path.startsWith('/') ? path : \`/\${path}\`}\`, { ...init, headers })
+    response = await fetch(`${API_BASE}${path.startsWith('/') ? path : `/${path}`}`, { ...init, headers })
   } catch {
     throw new Error('Could not reach the API. Check your connection and the VITE_API_BASE_URL setting.')
   }
@@ -35,11 +35,11 @@ async function api<T>(path: string, init: RequestInit = {}, tokenOverride?: stri
   try {
     payload = await response.json() as Envelope<T> | T
   } catch {
-    throw new Error(response.ok ? 'The server returned an unreadable response.' : \`Request failed (\${response.status}).\`)
+    throw new Error(response.ok ? 'The server returned an unreadable response.' : `Request failed (${response.status}).`)
   }
   const envelope = payload as Envelope<T>
   if (!response.ok || envelope?.status === false || (typeof envelope?.code === 'number' && envelope.code >= 400)) {
-    throw new Error(envelope?.message || \`Request failed (\${response.status}).\`)
+    throw new Error(envelope?.message || `Request failed (${response.status}).`)
   }
   return (envelope && typeof envelope === 'object' && 'data' in envelope ? envelope.data : payload) as T
 }
@@ -370,7 +370,7 @@ function App() {
   const activeRoom = rooms.find(room => room.chatroom_id === activeChatId)
 
   const loadRoomDetails = useCallback(async (chatroomId: string) => {
-    const data = await api<ChatDetail>(\`/ChatRoom/chatroom/\${encodeURIComponent(chatroomId)}\`)
+    const data = await api<ChatDetail>(`/ChatRoom/chatroom/${encodeURIComponent(chatroomId)}`)
     const nextMessages = Array.isArray(data?.messages) ? data.messages : []
     if (activeChatRef.current === chatroomId) setMessages(nextMessages)
     return { ...data, messages: nextMessages }
@@ -416,7 +416,7 @@ function App() {
           setProfile(null)
           setRooms([])
           setMessages([])
-          notify(\`Session ended: \${getError(err)}\`)
+          notify(`Session ended: ${getError(err)}`)
         }
       } finally {
         if (!cancelled) setIsLoading(false)
@@ -434,7 +434,7 @@ function App() {
     let cancelled = false
     const fetchRoom = async () => {
       try {
-        const data = await api<ChatDetail>(\`/ChatRoom/chatroom/\${encodeURIComponent(activeChatId)}\`)
+        const data = await api<ChatDetail>(`/ChatRoom/chatroom/${encodeURIComponent(activeChatId)}`)
         if (!cancelled && activeChatRef.current === activeChatId) setMessages(Array.isArray(data?.messages) ? data.messages : [])
       } catch (err) {
         if (!cancelled) notify(getError(err))
@@ -508,13 +508,13 @@ function App() {
         chatroomId = newRoom.chatroom_id
       } else {
         try {
-          const current = await api<ChatDetail>(\`/ChatRoom/chatroom/\${encodeURIComponent(chatroomId)}\`)
+          const current = await api<ChatDetail>(`/ChatRoom/chatroom/${encodeURIComponent(chatroomId)}`)
           baselineAiCount = (current.messages || []).filter(message => message.sender === 'ai').length
         } catch {
           baselineAiCount = messages.filter(message => message.sender === 'ai').length
         }
       }
-      await api<{ message_id?: string }>(\`/message/\${encodeURIComponent(chatroomId)}/message\`, {
+      await api<{ message_id?: string }>(`/message/${encodeURIComponent(chatroomId)}/message`, {
         method: 'POST', body: JSON.stringify({ content }),
       })
       setWaitingForReply(true)
@@ -523,7 +523,7 @@ function App() {
       for (let attempt = 0; attempt < 24; attempt += 1) {
         await new Promise(resolve => window.setTimeout(resolve, 1800))
         try {
-          const detail = await api<ChatDetail>(\`/ChatRoom/chatroom/\${encodeURIComponent(chatroomId)}\`)
+          const detail = await api<ChatDetail>(`/ChatRoom/chatroom/${encodeURIComponent(chatroomId)}`)
           const nextMessages = Array.isArray(detail?.messages) ? detail.messages : []
           if (activeChatRef.current === chatroomId) setMessages(nextMessages)
           const nextAiCount = nextMessages.filter(message => message.sender === 'ai').length
@@ -670,13 +670,13 @@ function App() {
               <div className="welcome-content">
                 <div className="welcome-glyph"><BrandMark /></div>
                 <p className="welcome-eyebrow">A GOOD PLACE TO BEGIN</p>
-                <h1>Hi{profile?.full_name?.trim() ? \`, \${profile.full_name.trim().split(/\s+/)[0]}\` : ' there'}<span className="greeting-comma">.</span><br /><span className="gradient-text">What’s on your mind?</span></h1>
+                <h1>Hi{profile?.full_name?.trim() ? `, ${profile.full_name.trim().split(/\s+/)[0]}` : ' there'}<span className="greeting-comma">.</span><br /><span className="gradient-text">What’s on your mind?</span></h1>
                 <p className="welcome-description">Big questions, little curiosities, half-formed ideas — bring them all. We’ll figure out the next step together.</p>
                 <div className="starter-grid">
                   {starterPrompts.map(prompt => {
                     const Icon = prompt.icon
                     return <button key={prompt.title} className="starter-card" onClick={() => void submitMessage(prompt.text)}>
-                      <span className={\`starter-icon \${prompt.tone}\`}><Icon size={19} /></span>
+                      <span className={`starter-icon ${prompt.tone}`}><Icon size={19} /></span>
                       <span className="starter-card-copy"><strong>{prompt.title}</strong><span>{prompt.text}</span></span>
                       <ArrowUpRightIcon />
                     </button>
@@ -689,7 +689,7 @@ function App() {
               {messages.length === 0 && !waitingForReply ? (
                 <div className="empty-chat-state"><BrandMark /><h2>A clean slate.</h2><p>Ask a question, explore an idea, or just start wherever you are.</p></div>
               ) : messages.map((message, index) => (
-                <article key={message.message_id || \`\${message.sender}-\${index}\`} className={message.sender === 'user' ? 'message-row user-message-row' : 'message-row ai-message-row'}>
+                <article key={message.message_id || `${message.sender}-${index}`} className={message.sender === 'user' ? 'message-row user-message-row' : 'message-row ai-message-row'}>
                   {message.sender === 'user' ? (
                     <div className="user-bubble">
                       <div className="message-body">{message.content}</div>

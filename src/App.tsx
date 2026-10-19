@@ -379,7 +379,13 @@ function App() {
   const loadRooms = useCallback(async () => {
     const data = await api<Room[]>('/ChatRoom/chatroom')
     const nextRooms = Array.isArray(data) ? data : []
-    setRooms(nextRooms)
+    // The backend caches room lists; merge server data with known rooms so a newly
+    // created chat remains visible if the cache has not expired yet.
+    setRooms(existing => {
+      const merged = new Map(existing.map(room => [room.chatroom_id, room]))
+      for (const room of nextRooms) merged.set(room.chatroom_id, room)
+      return [...merged.values()]
+    })
     return nextRooms
   }, [])
 

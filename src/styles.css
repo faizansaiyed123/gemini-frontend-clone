@@ -61,7 +61,6 @@ button, input, textarea { -webkit-tap-highlight-color: transparent; }
 .secondary-button:hover { background: var(--surface-soft); color: var(--ink); }
 .secondary-button.compact { min-height: 34px; font-size: 11px; }
 
-/* Authentication */
 .auth-page { min-height: 100vh; display: grid; grid-template-columns: minmax(440px, .95fr) minmax(500px, 1.05fr); background: var(--surface); }
 .auth-showcase { position: relative; isolation: isolate; min-height: 100vh; overflow: hidden; padding: 36px clamp(32px, 5vw, 78px) 26px; display: flex; flex-direction: column; color: #fff; background: radial-gradient(ellipse at 60% 41%, rgba(96, 93, 206, .44), transparent 33%), radial-gradient(ellipse at 16% 90%, rgba(58, 114, 151, .28), transparent 35%), linear-gradient(155deg, #191a35 0%, #202344 48%, #1d2a41 100%); }
 .auth-showcase::before { content: ''; position: absolute; inset: 0; z-index: -1; background-image: radial-gradient(rgba(255,255,255,.16) .7px, transparent .7px); background-size: 19px 19px; opacity: .28; mask-image: linear-gradient(to bottom, transparent 0%, #000 30%, #000 77%, transparent 100%); }
@@ -146,7 +145,6 @@ button, input, textarea { -webkit-tap-highlight-color: transparent; }
 .spinner-dark { width: 16px; height: 16px; border-color: rgba(255,255,255,.45); border-top-color: #fff; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Main chat workspace */
 .app-shell { min-height: 100vh; height: 100vh; display: flex; overflow: hidden; background: var(--page); color: var(--ink); }
 .sidebar { width: 265px; flex: 0 0 265px; display: flex; flex-direction: column; min-height: 0; padding: 23px 14px 13px; background: var(--sidebar); border-right: 1px solid var(--line); transition: transform .25s ease; z-index: 20; }
 .sidebar-head { display: flex; align-items: center; justify-content: space-between; padding: 0 8px; margin-bottom: 29px; }
@@ -279,7 +277,6 @@ button, input, textarea { -webkit-tap-highlight-color: transparent; }
 .compact-composer .composer-card { box-shadow: 0 5px 20px rgba(46,47,90,.04); }
 .sidebar-scrim { display: none; }
 
-/* Settings and notifications */
 .modal-backdrop { position: fixed; z-index: 50; inset: 0; display: flex; align-items: center; justify-content: center; padding: 22px; background: rgba(24,25,46,.38); backdrop-filter: blur(5px); animation: backdrop-in .18s ease; }
 @keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
 .settings-modal { width: 100%; max-width: 490px; max-height: min(700px, 92vh); overflow-y: auto; border: 1px solid var(--line); border-radius: 23px; background: var(--surface); box-shadow: var(--shadow); animation: modal-in .2s ease; }
@@ -443,7 +440,6 @@ button, input, textarea { -webkit-tap-highlight-color: transparent; }
 }
 
 
-/* Public landing page */
 .landing-page{--land-ink:#22213b;--land-muted:#77768c;--land-purple:#7062df;--land-pink:#edb8d1;background:#fbfaff;color:var(--land-ink);font-family:'DM Sans',sans-serif;overflow:hidden}
 .landing-nav{height:82px;max-width:1240px;padding:0 36px;margin:auto;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:10}
 .landing-brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:#282641;font-family:'Manrope',sans-serif;font-size:24px;font-weight:800;letter-spacing:-1.2px}
@@ -506,7 +502,6 @@ button, input, textarea { -webkit-tap-highlight-color: transparent; }
 @media(max-width:420px){.hero-copy h1{font-size:46px;letter-spacing:-2.5px}.hero-desktop-break{display:none}.hero-actions{gap:15px}.hero-primary{padding:14px 16px;gap:11px}.hero-secondary{font-size:11px}.hero-art{min-height:410px;margin:0}.preview-body{padding:23px 17px 17px}.preview-greeting h3{font-size:18px}.preview-suggestion{padding:9px;font-size:9px}.floating-note{padding:9px}.floating-note-bottom{left:-7px}.floating-note-top{right:-6px}.floating-note small{font-size:8px}.hero-spark-a{right:10%}.landing-footer>div a,.landing-footer>div button{font-size:9px}.demo-reaction{flex-wrap:wrap}}
 @media(prefers-reduced-motion:reduce){.landing-page *, .landing-page *::before,.landing-page *::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 
-/* Return to the public landing page from the sign-in and registration screens. */
 .auth-home-button { position: fixed; z-index: 20; top: 22px; right: 24px; display: inline-flex; align-items: center; gap: 7px; min-height: 38px; padding: 0 13px; border: 1px solid var(--border, rgba(100, 100, 130, .18)); border-radius: 999px; color: var(--ink, #25253c); background: rgba(255, 255, 255, .88); box-shadow: 0 5px 18px rgba(24, 24, 54, .07); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; backdrop-filter: blur(12px); transition: transform .18s ease, box-shadow .18s ease, background .18s ease; }
 .auth-home-button:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(24, 24, 54, .12); background: #fff; }
 .auth-home-button:focus-visible { outline: 3px solid rgba(119, 108, 232, .35); outline-offset: 3px; }

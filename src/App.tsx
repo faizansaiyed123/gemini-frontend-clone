@@ -422,8 +422,6 @@ function App() {
   const loadRooms = useCallback(async () => {
     const data = await api<Room[]>('/ChatRoom/chatroom')
     const nextRooms = Array.isArray(data) ? data : []
-    // The backend caches room lists; merge server data with known rooms so a newly
-    // created chat remains visible if the cache has not expired yet.
     setRooms(existing => {
       const merged = new Map(existing.map(room => [room.chatroom_id, room]))
       for (const room of nextRooms) merged.set(room.chatroom_id, room)
@@ -578,7 +576,6 @@ function App() {
           const nextAiCount = nextMessages.filter(message => message.sender === 'ai').length
           if (nextAiCount > baselineAiCount) { receivedReply = true; break }
         } catch {
-          // The async worker can still be processing. The next poll retries the read.
         }
       }
       if (!receivedReply) notify('Your message was sent, but the reply is taking longer than usual. Reopen the chat to refresh it.')

@@ -50,7 +50,7 @@ A successful account creation and its database row could **not** be verified dur
 
 ### What happens when the form is incomplete?
 
-![Signup form validation feedback](visuals/10-signup-validation-feedback.jpg)
+![Signup form validation feedback](visuals/09-signup-validation-feedback.jpg)
 
 The form checks entries before attempting an account-creation request. This is useful feedback for a visitor, but browser-side validation is only the first layer: the backend schema and database constraints must still reject invalid input and duplicate mobile numbers.
 
@@ -62,7 +62,7 @@ Sign-in uses a mobile number and a one-time code rather than a password entry sc
 
 ### Invalid mobile number
 
-![Sign-in input validation](visuals/11-signin-validation.jpg)
+![Sign-in input validation](visuals/10-signin-validation.jpg)
 
 The interface checks the mobile number format before requesting a code. For a valid number, the frontend would submit `POST /auth/send-otp`, then `POST /auth/verify-otp` with the code. The verification endpoint is intended to issue the bearer token used by all protected workspace APIs.
 
@@ -74,7 +74,7 @@ The failure shown here is the actual browser/network result. It is not an OTP-re
 
 ## 3. Recover account access
 
-![Password recovery entry](visuals/12-password-recovery.jpg)
+![Password recovery entry](visuals/11-password-recovery.jpg)
 
 The **Need help?** entry opens recovery. The intended sequence is to submit a mobile number, verify a one-time code, and choose a new password.
 
@@ -124,6 +124,10 @@ The Plan panel calls `GET /subscribe/subscription/status` to display the stored 
 
 After checkout, `POST /subscribe/webhook/stripe` is intended to verify the Stripe signature and update the user's `subscription_tier` after a completed session. No checkout or live payment was initiated.
 
+### Is there a separate admin workspace?
+
+The inspected frontend and backend do not expose a separate administrator dashboard, administrator role, or admin-only API group. The tour therefore follows the user-facing product that exists in these repositories.
+
 ## 6. The data behind the experience
 
 The backend migrations define four PostgreSQL tables:
@@ -141,7 +145,7 @@ Relevant implementation: [database migrations](https://github.com/faizansaiyed12
 
 ## 7. A smaller screen
 
-![Gemini homepage at a mobile viewport](visuals/13-mobile-home.jpg)
+![Gemini homepage at a mobile viewport](visuals/12-mobile-home.jpg)
 
 The homepage adapts to a narrow viewport and keeps the main call to action in view.
 

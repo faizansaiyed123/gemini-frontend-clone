@@ -1,239 +1,163 @@
-# Gemini Clone — Visual Full-Stack Walkthrough
+# Gemini — A Visual Product Walkthrough
 
-> **Verification date:** 25 October 2026  
-> **Scope:** production frontend, frontend build, backend route contract, an isolated FastAPI + PostgreSQL run, and source-to-database flow mapping.  
-> **Reading this document:** this is a product walkthrough with evidence and a tracked test checklist. It does **not** mark unexecuted flows as passed.
+Gemini is presented as a personal space for asking questions, exploring ideas, and keeping conversations together. This tour follows the experience from the public homepage through account access, then explains how conversations, account settings, and the Pro plan fit together.
 
-The goal is to follow the application as a person would use it, then show what the frontend calls, what the backend is intended to do, and where data is stored. The format follows the user-journey style of the [AutoFix visual walkthrough](https://github.com/faizansaiyed123/autofix_frontend/blob/main/docs/testing/VISUAL-TEST-WALKTHROUGH.md).
+> **A note before entering:** the public frontend is online, but the configured production API is currently suspended by its hosting service. The screenshots below are genuine browser captures. The signed-in screens and successful AI conversation are described where they belong in the journey, but are not shown as completed because doing so would require fabricating a successful backend response.
 
-## The product at a glance
+## The experience at a glance
 
-Gemini Clone is an AI chat workspace with mobile-number OTP authentication, saved conversations, asynchronous assistant responses, account settings, password management, and a Basic/Pro subscription flow. Despite the Gemini branding, the backend source currently calls **OpenAI `gpt-3.5-turbo`**, rather than Google's Gemini API.
+The journey begins with a public introduction, continues through mobile-number sign-in or account creation, and is intended to lead into a saved AI chat workspace. Conversations are stored in PostgreSQL. Redis is used for conversation caching, message queueing and Basic-plan limits; the background worker currently calls OpenAI's `gpt-3.5-turbo` model despite the Gemini product branding.
 
-### Verified status at a glance
+## 1. Discover the space
 
-| Area | Evidence-backed result |
+### The homepage
+
+![Gemini homepage](visuals/01-homepage.jpg)
+
+The homepage explains the product before asking the visitor to create an account. The navigation links jump to Features, Preview and About. **Get started** and **Start exploring** open account creation; **Log in** opens the returning-user flow.
+
+The call to action is deliberately clear: a visitor can look around first, then create an account when they are ready.
+
+### Features: the kinds of things you can explore
+
+![Features section](visuals/06-features.jpg)
+
+This section describes the product's intended role as a place to untangle questions, plan, and develop ideas. These are introductory product claims, not separate backend modules: the actual assistant answer only exists when a signed-in request reaches the API and the AI worker completes it.
+
+### Preview: choose a place to begin
+
+![Interactive preview with a selected prompt](visuals/07-preview-selected-prompt.jpg)
+
+The preview lets a visitor select a suggested prompt to see a starting point. The preview is intentionally a doorway, not a live AI conversation. Selecting **Meet your AI** or the send arrow asks the visitor to create an account before starting a real chat.
+
+### Ready to begin
+
+![Create account call to action](visuals/08-create-account-cta.jpg)
+
+The final invitation leads back to the same account-creation journey. The idea is simple: a visitor can browse the page, understand the product, and enter through one consistent account flow.
+
+## 2. Create an account
+
+### Account creation
+
+![Create account form](visuals/02-signup-form.jpg)
+
+The form asks for a mobile number, password and confirmation. A name can be provided so the workspace can greet the user personally.
+
+Behind the screen, the frontend is intended to send `POST /auth/signup`. The backend validates the submitted fields, checks that the mobile number is not already registered, hashes the password, writes a user record to PostgreSQL, and returns an access token. The frontend then uses that token to load the user's profile, conversation history and subscription tier.
+
+A successful account creation and its database row could **not** be verified during this run because the production API is suspended. No registration is presented as successful without that evidence.
+
+### What happens when the form is incomplete?
+
+![Signup form validation feedback](visuals/10-signup-validation-feedback.jpg)
+
+The form checks entries before attempting an account-creation request. This is useful feedback for a visitor, but browser-side validation is only the first layer: the backend schema and database constraints must still reject invalid input and duplicate mobile numbers.
+
+### Returning to sign in
+
+![Sign-in screen](visuals/03-signin-form.jpg)
+
+Sign-in uses a mobile number and a one-time code rather than a password entry screen. This is the intended route back to an existing workspace.
+
+### Invalid mobile number
+
+![Sign-in input validation](visuals/11-signin-validation.jpg)
+
+The interface checks the mobile number format before requesting a code. For a valid number, the frontend would submit `POST /auth/send-otp`, then `POST /auth/verify-otp` with the code. The verification endpoint is intended to issue the bearer token used by all protected workspace APIs.
+
+The production request was attempted from the browser, but the Render service returned HTTP 503 with `x-render-routing: suspend-by-user`. The app could not complete OTP delivery or verification.
+
+![The sign-in request cannot reach the suspended API](visuals/05-backend-error.jpg)
+
+The failure shown here is the actual browser/network result. It is not an OTP-rejection screen from the backend—the application did not receive a response from the running API.
+
+## 3. Recover account access
+
+![Password recovery entry](visuals/12-password-recovery.jpg)
+
+The **Need help?** entry opens recovery. The intended sequence is to submit a mobile number, verify a one-time code, and choose a new password.
+
+The backend routes are `POST /auth/forgot-password` and `POST /auth/reset-password`. The signed-in Security panel also uses `POST /auth/change-password` for users who know their current password. The backend configures a five-minute OTP expiry and a maximum of five incorrect attempts.
+
+This recovery journey could not be completed against the suspended production API. The repository currently documents the OTP response as a development/test flow that returns the code to the client. Before production use, that code must be delivered through a real, separate channel rather than returned in the API response.
+
+## 4. Inside the chat workspace
+
+A signed-in user is intended to arrive at a personal workspace with a sidebar for recent conversations, a central conversation area, and a message composer. The welcome screen offers starter prompts; the user can also type a question and send it with Enter, using Shift+Enter for a new line.
+
+**The authenticated workspace screenshot is intentionally absent:** the only available backend deployment is suspended, and no genuine authenticated session could be established during this run. The documented UI behavior below is based on the actual frontend and backend source; it is not represented as a successful live walkthrough.
+
+### Start a new conversation
+
+When the user sends a first message, the frontend first creates a room with a title derived from that prompt. The backend's `POST /ChatRoom/chatroom` inserts a `chatrooms` row linked to the authenticated user. The frontend then selects the returned room and sends the message.
+
+A conversation title is therefore not just a card in the UI: it corresponds to a database row that should reappear in recent history after the page is refreshed.
+
+### Return to a previous conversation
+
+The sidebar calls `GET /ChatRoom/chatroom` to load recent rooms. Opening one calls `GET /ChatRoom/chatroom/{chatroom_id}` to retrieve the room and its messages. The backend scopes these operations to the user represented by the bearer token.
+
+The sidebar search filters the list of rooms already loaded in the browser; it is not a separate server-side search endpoint. Choosing **New chat** clears the current view without deleting saved conversations.
+
+### Send a message and receive an answer
+
+The composer sends `POST /message/{chatroom_id}/message`. The backend checks the user's plan and room ownership, saves the user message in `chat_messages`, and pushes a job to the Upstash Redis list `openai_chat_queue`. A background worker reads that job, calls OpenAI `gpt-3.5-turbo`, and stores the assistant reply. The frontend polls the room detail endpoint while waiting for the reply.
+
+That sequence is the product's core experience, but it has **not** been verified end to end here: the deployed API is suspended, and no successful live Redis-to-worker-to-model response was available. No assistant answer has been invented for this document.
+
+## 5. Your account, security and plan
+
+These are the account tools present in the application. They are described here so a visitor can understand the workspace, but no successful authenticated screenshot is claimed while the API is unavailable.
+
+### Account details and appearance
+
+The Account panel is designed to show the user's name, mobile number, verification state, and Basic/Pro tier. The theme button switches between light and dark appearance and persists the preference in browser local storage under `gemini_theme`. That preference is local to the browser; it is not a PostgreSQL setting.
+
+### Security
+
+The Security panel submits the current and new password to `POST /auth/change-password`. The frontend checks for at least eight characters, a letter, a number, and a special character before sending. The server remains responsible for validating the token and applying the update. No real account password was changed during this run.
+
+### Basic and Pro
+
+The Plan panel calls `GET /subscribe/subscription/status` to display the stored subscription tier. Basic is described in the code as allowing five messages per day; Pro removes that product limit. The upgrade action calls `POST /subscribe/pro` and redirects to the returned Stripe Checkout URL.
+
+After checkout, `POST /subscribe/webhook/stripe` is intended to verify the Stripe signature and update the user's `subscription_tier` after a completed session. No checkout or live payment was initiated.
+
+## 6. The data behind the experience
+
+The backend migrations define four PostgreSQL tables:
+
+| Table | What it stores |
 | --- | --- |
-| Production frontend | **Passed.** The live Vercel homepage loaded successfully. |
-| Frontend production build | **Passed.** `npm run build` completed, including TypeScript checking and Vite bundling. |
-| Landing page and responsive navigation | **Passed.** Real browser checks and screenshots are included below. |
-| Client-side signup validation | **Passed.** A weak/mismatched password was rejected before any API request was sent. |
-| Backend deployment | **Blocked.** The configured Render URL returned HTTP **503**, with `x-render-routing: suspend-by-user`; the service is suspended by its owner. |
-| Local backend route guards | **Passed.** Protected endpoints rejected requests without a token; no user, room, or message rows were written. |
-| Local database migrations | **Passed.** The backend startup migration created the four expected tables in disposable PostgreSQL. |
-| Redis rate-limiter client fix | **Applied to backend main.** A focused isolated logic check allowed five messages and rejected the sixth; real Upstash integration still needs a live test. |
-| Stripe webhook error-status fix | **Applied to backend main.** The missing-signature case returned HTTP 400 in the isolated backend. Valid signed delivery is not yet tested. |
-| Authenticated chat, AI, account, and Stripe flows | **Not verified end to end.** The suspended deployment and missing real provider connectivity prevent honest confirmation. |
-
-**Important boundary:** the isolated test database was not a production database. No production data was created or altered. Successful checks below are specific to the behavior stated beside each result.
-
-## 1. Entering the application
-
-### Public homepage
-
-The homepage is available without a session. Its navigation exposes Features, Preview, About, Log in, and Get started. The primary call to action opens the account-creation flow.
-
-![Gemini Clone public homepage](visuals/01-homepage.jpg)
-
-**Verified in a real browser:** the production URL returned HTTP 200, the page title was “Gemini — Think it through”, the homepage text rendered, and the Get started interaction opened the account form.
-
-[Open the deployed frontend](https://gemini-frontend-clone.vercel.app/) · [Frontend source](https://github.com/faizansaiyed123/gemini-frontend-clone)
-
-### Creating an account
-
-![Account creation form](visuals/02-signup-form.jpg)
-
-The form collects a name, mobile number, password, and confirmation. In the exercised invalid-input case, the browser displayed validation feedback and sent **zero** requests to the backend. This validates the guard on that specific invalid case; it does not prove that a real registration successfully commits to the database.
-
-The intended full flow in the code is:
-
-1. The browser submits `POST /auth/signup`.
-2. The backend validates the payload, checks for an existing mobile number, hashes the password, inserts a `users` row, commits the transaction, and returns an access token.
-3. The frontend stores the token and loads the current profile, chat list, and subscription status.
-
-The registration write was **not** run in the production environment because its backend is suspended and an authenticated database write could not be verified safely. The isolated database was left empty after the negative tests.
-
-### Signing in and the live integration blocker
-
-![Sign-in form](visuals/03-signin-form.jpg)
-
-The sign-in screen requests an OTP for the supplied mobile number. The browser attempted the real request `POST /auth/send-otp` against the configured production API; it did not receive an application response. The backend host returned a Render suspension page with HTTP 503 and no CORS response headers, so the browser reported a CORS/preflight failure and `net::ERR_FAILED`.
-
-![Captured sign-in API failure](visuals/05-backend-error.jpg)
-
-This is **not** evidence that OTP validation failed inside FastAPI: the suspended service did not serve the request to the application. No successful OTP, token issuance, or sign-in is claimed.
-
-### Smaller screens
-
-![Mobile navigation opened in a real browser](visuals/04-mobile-nav.jpg)
-
-The responsive landing page and navigation toggle were exercised at a mobile viewport. The menu opened and the Features link became visible. The authenticated mobile chat sidebar cannot be validated fully until an authenticated session can be established.
-
-## 2. Authentication and account access
-
-The route list below is taken from the frontend API calls and backend router definitions, rather than inferred from the screen labels.
-
-| User journey | API contract | Backend/data behavior | Test status |
-| --- | --- | --- | --- |
-| Create an account | `POST /auth/signup` | Validates fields, rejects duplicate mobile numbers, bcrypt-hashes password, inserts `users`, returns a token | **Not run end to end** |
-| Request sign-in code | `POST /auth/send-otp` | Stores OTP and resend/attempt metadata; current implementation describes the OTP flow as mocked | **Live request blocked by suspended service** |
-| Verify code / sign in | `POST /auth/verify-otp` | Checks stored code, expiry and attempt limit; returns token on success | **Not run end to end** |
-| Request password recovery | `POST /auth/forgot-password` | Initiates the OTP recovery flow | **Not run end to end** |
-| Reset password | `POST /auth/reset-password` | Updates a password after the OTP verification token is supplied | **Not run end to end** |
-| Change password | `POST /auth/change-password` | Authenticated password update; validates the new password contract | **Not run end to end** |
-| Load account profile | `GET /user/user/me` | Reads the signed-in user from PostgreSQL | **Unauthenticated guard verified; signed-in result blocked** |
-| Sign out | Client-side token clearing | Removes the frontend token and clears profile/chat state | **Source reviewed; complete authenticated lifecycle blocked** |
-
-The backend settings specify a five-minute OTP expiry and a maximum of five incorrect attempts. The frontend validates that a new password is at least eight characters and includes a letter, number, and special character; server-side validation also needs to be exercised once the service is available.
-
-**Security note from the repository's own implementation:** OTP delivery is currently mocked and the OTP is returned in the API response for the UI to display as a test code. That must be replaced with a real, secure out-of-band delivery flow before treating this as production-grade authentication. See the [backend README](https://github.com/faizansaiyed123/gemini-backend-clone#readme) and [authentication service](https://github.com/faizansaiyed123/gemini-backend-clone/blob/main/src/services/auth_service.py).
-
-## 3. Chat workspace and saved conversations
-
-The intended authenticated journey starts with the frontend loading the current user, recent rooms, and subscription tier. Creating a conversation and loading its history use the real API contracts below.
-
-| Action in the UI | API | Data operation in source | Test status |
-| --- | --- | --- | --- |
-| Load conversation list | `GET /ChatRoom/chatroom` | Reads rooms owned by the authenticated user; Redis is used as a room-list cache | **Unauthenticated guard verified; authenticated data blocked** |
-| Start a new chat | `POST /ChatRoom/chatroom` | Inserts a `chatrooms` row linked to the current user | **Not run end to end** |
-| Open an existing chat | `GET /ChatRoom/chatroom/{chatroom_id}` | Reads a room and its messages, scoped to the current user | **Unauthenticated guard verified; authenticated data blocked** |
-| Send a message | `POST /message/{chatroom_id}/message` | Checks plan allowance, checks room ownership, stores a user message, then enqueues work | **Unauthenticated guard verified; successful write blocked** |
-| Reload recent conversations | Room-list and room-detail GET calls | Rehydrates the sidebar/history and selected conversation | **Not run end to end** |
-| Search history | Local filter over rooms already loaded | Filters room names in the browser; it is not a server-side search endpoint | **Source reviewed** |
-| Send with keyboard | Enter submits; Shift+Enter inserts a newline | Browser interaction only, followed by the same send API | **Source reviewed** |
-| Copy assistant response | Clipboard API | Copies the rendered response to the clipboard | **Source reviewed** |
-| Light/dark theme | Browser local storage | Stores `gemini_theme`; does not write to PostgreSQL | **Source reviewed** |
-
-The chatroom APIs are protected with a bearer token. In the isolated local run, requests without credentials to the profile, room list, room detail, subscription status, and message endpoint all returned **HTTP 403 — Not authenticated**. The isolated PostgreSQL counts remained `users = 0`, `chatrooms = 0`, and `chat_messages = 0` after these negative checks.
-
-## 4. What happens after Send
-
-The message path is designed to separate the fast user-message write from the slower assistant response:
-
-```mermaid
-flowchart TD
-    UI[Chat composer] --> API[FastAPI message endpoint]
-    API --> DB[(PostgreSQL: chat_messages)]
-    API --> Q[(Upstash Redis list: openai_chat_queue)]
-    Q --> W[Background worker]
-    W --> AI[OpenAI gpt-3.5-turbo]
-    AI --> DB
-    UI -->|Polls room detail for a reply| API
-```
-
-The source code indicates this sequence:
-
-1. If no room is selected, the frontend first creates a chatroom using the first part of the prompt as its title.
-2. The backend stores the user message in `chat_messages`.
-3. The backend pushes the message payload to the Redis list `openai_chat_queue`.
-4. A background worker reads the queue and calls OpenAI `gpt-3.5-turbo`, then stores the assistant response.
-5. The frontend polls room details every 1.8 seconds, up to 24 attempts, looking for a newly added AI message.
-
-**This workflow has not passed an end-to-end test.** The live backend is suspended; the local integration runtime used invalid, test-only Redis and OpenAI settings, so it was not possible to assert a successful queue round-trip, model response, or persisted assistant reply. No AI response is fabricated for this walkthrough.
-
-Relevant code: [message service](https://github.com/faizansaiyed123/gemini-backend-clone/blob/main/src/services/message_service.py), [queue implementation](https://github.com/faizansaiyed123/gemini-backend-clone/blob/main/src/queue/queue.py), [worker](https://github.com/faizansaiyed123/gemini-backend-clone/blob/main/src/services/worker.py).
-
-## 5. Account settings, security, and plan
-
-These views are present in the frontend source. Their authenticated API results and external provider steps remain unverified while the production backend is unavailable.
-
-### Account details and sign out
-
-The account panel reads the current user's full name, mobile number, verification status, and current subscription tier. Sign out removes the `gemini_token` browser storage entry and clears the current profile, room list, and messages. **Code-reviewed; not verified with a signed-in production account.**
-
-### Password change
-
-The Security tab submits `POST /auth/change-password` with the current and new password. The UI checks basic password composition before sending; the server is responsible for authenticating the token and applying the password change. **No password was changed during this run.**
-
-### Basic and Pro plans
-
-The frontend requests `GET /subscribe/subscription/status` to display the plan. Selecting the upgrade action sends `POST /subscribe/pro`, expects a `checkout_url`, and redirects the browser to Stripe Checkout. The webhook route `POST /subscribe/webhook/stripe` is intended to verify Stripe's signature and update `users.subscription_tier` after `checkout.session.completed`.
-
-- Basic tier: the code intends to limit users to five messages per day.
-- Pro tier: the UI describes unlimited messages.
-- Checkout creation, paid subscription, cancellation return, successful webhook verification, and subsequent database tier update were **not exercised**. No live payment was initiated.
-
-## 6. Database and persistence
-
-The backend migration files define these PostgreSQL tables:
-
-| Table | Purpose |
-| --- | --- |
-| `users` | Mobile number, password hash, OTP metadata, verification status, and subscription tier |
+| `users` | Mobile number, password hash, OTP metadata, verification status and subscription tier |
 | `chatrooms` | Conversation title and owning user |
-| `chat_messages` | User and assistant messages linked to a conversation |
-| `migrations` | Migration filenames and execution timestamps |
+| `chat_messages` | User and assistant messages linked to a room |
+| `migrations` | Applied SQL migration filenames and timestamps |
 
-The actual backend was started against a **disposable local PostgreSQL instance**. Its startup migration completed and `psql` confirmed that `users`, `chatrooms`, `chat_messages`, and `migrations` existed. That proves schema initialization in this isolated environment; it does **not** prove CRUD correctness or inspect the suspended service's production database.
+The actual backend was started against a disposable local PostgreSQL database. Its migrations created all four tables, and `psql` confirmed that the schema existed. Negative API checks also confirmed that requests without a token to the profile, room list, room detail, subscription status, and message routes returned HTTP 403; the test database remained unchanged after those checks.
 
-Migration source: [V1 users](https://github.com/faizansaiyed123/gemini-backend-clone/blob/main/src/database/V1__create_users_table.sql), [V2 chatrooms](https://github.com/faizansaiyed123/gemini-backend-clone/blob/main/src/database/V2__chatroom.sql), [V3 messages](https://github.com/faizansaiyed123/gemini-backend-clone/blob/main/src/database/V3__chatroom_messages.sql), [V4 OTP metadata](https://github.com/faizansaiyed123/gemini-backend-clone/blob/main/src/database/V4__added_column_user.sql).
+Relevant implementation: [database migrations](https://github.com/faizansaiyed123/gemini-backend-clone/tree/main/src/database), [chatroom service](https://github.com/faizansaiyed123/gemini-backend-clone/blob/main/src/services/chatroom_service.py), [message service](https://github.com/faizansaiyed123/gemini-backend-clone/blob/main/src/services/message_service.py), [background worker](https://github.com/faizansaiyed123/gemini-backend-clone/blob/main/src/services/worker.py).
 
-## 7. API and feature coverage checklist
+## 7. A smaller screen
 
-**Legend:** ✅ verified for the stated assertion · ⚠️ defect or blocker found · 🟡 reviewed in source only · ⛔ full flow not run because a prerequisite is unavailable.
+![Gemini homepage at a mobile viewport](visuals/13-mobile-home.jpg)
 
-| Feature / check | Status | Evidence / next condition |
-| --- | --- | --- |
-| Production homepage and page title | ✅ | Live Vercel page loaded; screenshot above |
-| Get started opens account creation | ✅ | Real browser interaction |
-| Invalid signup password confirmation | ✅ | Client-side validation; zero API calls for this invalid case |
-| Responsive landing navigation | ✅ | Real mobile viewport and menu-open screenshot |
-| Frontend type-check and production build | ✅ | `npm run build` passed |
-| Live `POST /auth/send-otp` | ⚠️ | Browser attempted the request; Render suspension page prevented the API app from responding |
-| Signup row + password hash + returned JWT | ⛔ | Needs a functioning backend and a controlled test account |
-| OTP verification and expiry/attempt cases | ⛔ | Needs the functioning auth service and delivery contract |
-| Forgot/reset/change password | ⛔ | Authenticated database-backed lifecycle not run |
-| Protected profile/room/message/subscription paths | ✅ | Unauthenticated local calls returned 403; no writes |
-| Create/list/open conversation as a signed-in user | ⛔ | Requires an authenticated session against a working backend |
-| Persist message + queue + assistant reply | ⛔ | Redis/OpenAI production round-trip not available |
-| Basic-plan 5-message rate limit | 🟡 | Client selection and five/six boundary logic tested in isolation; live Upstash remains to be retested |
-| Search, clipboard, theme persistence, keyboard composer | 🟡 | Present in frontend source; not all interactions were executed |
-| Account profile and plan display | ⛔ | Requires successful profile/subscription API reads |
-| Stripe Checkout and completed payment webhook | ⛔ | External checkout/signature verification and tier update not exercised |
-| Missing-signature webhook response | ✅ | Fixed in backend main; isolated test now returns HTTP 400 |
-| PostgreSQL migrations | ✅ | Actual migrations ran in isolated PostgreSQL |
-| Production database state | ⛔ | No production DB read was possible through the suspended backend |
-| Admin pages / admin APIs | 🟡 | No separate administrator role, page, or admin endpoint was found in the inspected routes |
+The homepage adapts to a narrow viewport and keeps the main call to action in view.
 
-## 8. Findings, fixes, and remaining risks
+![Mobile navigation opened](visuals/04-mobile-nav.jpg)
 
-### P0 — Restore the backend service, then rerun integration tests
+The navigation menu expands and exposes the page links on mobile. The authenticated conversation sidebar is also responsive in the frontend code, but its signed-in behavior remains unverified until a valid session can be established.
 
-The configured production API `https://gemini-backend-q94y.onrender.com` responds with HTTP 503 and the Render header `x-render-routing: suspend-by-user`. Until the owner resumes the service and it is healthy, successful registration, chat persistence, queue processing, subscriptions, and production database verification cannot be completed. The suspension was not reversed from this test.
+## 8. A few implementation details worth knowing
 
-### Fixed in backend main — Separate Redis clients for sync and async code
+- **The product name and model provider differ.** The backend worker calls OpenAI `gpt-3.5-turbo`; it does not call Google's Gemini API.
+- **OTP is development-oriented today.** The current backend returns an OTP to the client; this should be replaced with secure out-of-band delivery for production.
+- **Queue delivery needs stronger failure handling.** The queue helper currently logs exceptions without propagating failure, so a saved user message can be left without a queued AI job. This remains open for a reliable retry/outbox design and live Redis verification.
+- **Two backend fixes have been applied on main.** The Basic-plan limiter now uses a synchronous Redis client while the chatroom cache retains its async client, and Stripe webhook requests with missing or invalid signatures now return HTTP 400. The isolated rate-limit boundary check passed; the missing-signature webhook was retested locally and returned HTTP 400. Live provider checks remain outstanding.
 
-The prior `src/configs/redis_config.py` imported the async Upstash `Redis` class over the sync import, while `src/utils/rate_limiter.py` called `get`, `incr`, and `expire` synchronously. The configuration now exposes a dedicated synchronous client for the rate limiter and retains the asynchronous client for the chatroom cache. A focused isolated logic check verified five allowed increments and rejection of the sixth. This did **not** call the production Upstash service; run the live Redis boundary and concurrency tests after resuming the backend.
+## Where the tour can continue
 
-Changes: [sync/async clients](https://github.com/faizansaiyed123/gemini-backend-clone/commit/8808e2f5d051f65227a7dac6a428f511fcff0c2f) · [rate limiter uses sync client](https://github.com/faizansaiyed123/gemini-backend-clone/commit/632ffbc612f133eda3190b3a2b6665508927800d)
+To add genuine screenshots of successful sign-in, saved conversations, assistant answers, Account/Security/Plan panels, and a completed Stripe test flow, the owner needs to resume the suspended Render API. Then the walkthrough can follow a dedicated test account through the actual browser, capture each successful UI state, and verify each write/read in PostgreSQL and each asynchronous response through Redis and the worker.
 
-### Fixed in backend main — Invalid Stripe webhook signatures now return HTTP 400
-
-Previously, an absent Stripe signature produced HTTP 200 with an internal `code: 401` body. The route now raises HTTP 400 for a missing or invalid signature. The local missing-signature test was rerun and returned HTTP 400 without changing database rows. A valid signed test event and idempotent tier update still require Stripe test-mode configuration.
-
-Change: [webhook status fix](https://github.com/faizansaiyed123/gemini-backend-clone/commit/9d5bd83621671ad758097931e67768ed7f89a84e)
-
-### P1 — Queue failures can be reported as successful sends
-
-[`push_to_queue()`](https://github.com/faizansaiyed123/gemini-backend-clone/blob/main/src/queue/queue.py) does not check the Upstash HTTP response status and catches exceptions without propagating a failure. The caller then logs “Message saved and pushed to queue” regardless. A user message can be saved in PostgreSQL while the queue push has failed, leaving the UI waiting for a response that cannot arrive. The fix should account for saved-but-not-queued messages and retry/idempotency semantics; a quick status check alone would risk duplicate user messages when the browser retries. This remains **open** pending a dependable retry/outbox design and live queue retest.
-
-### P1 — OTP is exposed to the client
-
-The backend README describes the OTP as mocked and returned in the API response. That makes the sign-in/recovery code visible to the same client that requested it, rather than proving the user's control of a separate channel. Replace this test-only implementation with secure SMS/OTP delivery and avoid logging or returning OTP secrets in production responses.
-
-### P2 — Dependency installation is not reproducible with `npm ci`
-
-The frontend repository does not contain a `package-lock.json`. Accordingly, `npm ci` failed with npm's missing-lockfile error. A normal `npm install` succeeded and the production build passed. Commit a reviewed lockfile so local, CI, and deployment installs resolve the same dependency versions.
-
-## 9. What “complete” still requires
-
-This walkthrough records the real UI and the evidence obtained, but the **full-stack verification is not complete**. To finish it without pretending, the next pass must run after the owner restores the backend:
-
-1. Confirm the API health/OpenAPI endpoint and the actual frontend-origin CORS preflight.
-2. Use a dedicated test mobile number and the documented OTP delivery path to complete signup, login, invalid/expired OTP, resend, and recovery cases.
-3. Verify each registration/password/chat write in PostgreSQL; verify room ownership and that one user's token cannot read or alter another user's rooms.
-4. Send messages through the actual Redis queue and worker, confirm both user and assistant rows in PostgreSQL, and verify Basic-plan rate-limit boundaries under concurrent requests.
-5. Exercise Stripe test-mode checkout, cancellation, missing/invalid signatures, valid webhook delivery, subscription status refresh, and database tier updates.
-6. Retest the queue reliability fix, capture authenticated screenshots, and update the status table only where new evidence supports a pass.
-
-Until then, successful assertions in this file remain valid, while blocked flows remain explicitly open.
+Until that prerequisite is available, this document presents the real public experience and explains the intended authenticated journeys without passing off a designed screen or synthetic assistant answer as a verified result.

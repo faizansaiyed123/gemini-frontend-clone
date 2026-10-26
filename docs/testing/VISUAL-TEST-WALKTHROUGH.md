@@ -2,7 +2,7 @@
 
 Gemini is presented as a personal space for asking questions, exploring ideas, and keeping conversations together. This tour follows the experience from the public homepage through account access, then explains how conversations, account settings, and the Pro plan fit together.
 
-> **A note before entering:** the public frontend is online, but the configured production API is currently suspended by its hosting service. The screenshots below are genuine browser captures. The signed-in screens and successful AI conversation are described where they belong in the journey, but are not shown as completed because doing so would require fabricating a successful backend response.
+> **What these screens are:** the public pages are captured from the frontend, and the signed-in screenshots come from a separate local end-to-end run using the actual FastAPI backend, a disposable PostgreSQL database, and a real Redis server. The production Render API is still suspended, so the authenticated test uses isolated local test data, not production user records. The user message is real and persisted; a model-generated answer was not produced because the test environment has no valid OpenAI credential.
 
 ## The experience at a glance
 
@@ -46,7 +46,7 @@ The form asks for a mobile number, password and confirmation. A name can be prov
 
 Behind the screen, the frontend is intended to send `POST /auth/signup`. The backend validates the submitted fields, checks that the mobile number is not already registered, hashes the password, writes a user record to PostgreSQL, and returns an access token. The frontend then uses that token to load the user's profile, conversation history and subscription tier.
 
-A successful account creation and its database row could **not** be verified during this run because the production API is suspended. No registration is presented as successful without that evidence.
+Account creation **was verified locally through the real browser and backend**: `POST /auth/signup` returned successfully, the response token was stored by the frontend, and the profile endpoint returned the newly created test profile from PostgreSQL. The production API remains suspended; these are separate local test records, not production registrations.
 
 ### What happens when the form is incomplete?
 
@@ -64,13 +64,11 @@ Sign-in uses a mobile number and a one-time code rather than a password entry sc
 
 ![Sign-in input validation](visuals/10-signin-validation.jpg)
 
-The interface checks the mobile number format before requesting a code. For a valid number, the frontend would submit `POST /auth/send-otp`, then `POST /auth/verify-otp` with the code. The verification endpoint is intended to issue the bearer token used by all protected workspace APIs.
+The interface checks the mobile number format before requesting a code. In the local integrated run, `POST /auth/send-otp` and `POST /auth/verify-otp` completed the returning-user login and the app loaded the authenticated workspace. The implementation currently exposes the test OTP in the response/client UI; that is a production security concern and should be replaced with secure out-of-band delivery.
 
-The production request was attempted from the browser, but the Render service returned HTTP 503 with `x-render-routing: suspend-by-user`. The app could not complete OTP delivery or verification.
+The production API is still manually suspended by Render, so the existing production failure capture below remains useful context. It shows the real HTTP 503 route failure, not an OTP rejection.
 
-![The sign-in request cannot reach the suspended API](visuals/05-backend-error.jpg)
-
-The failure shown here is the actual browser/network result. It is not an OTP-rejection screen from the backend—the application did not receive a response from the running API.
+![The production sign-in request cannot reach the suspended API](visuals/05-backend-error.jpg)
 
 ## 3. Recover account access
 
@@ -84,45 +82,55 @@ This recovery journey could not be completed against the suspended production AP
 
 ## 4. Inside the chat workspace
 
-A signed-in user is intended to arrive at a personal workspace with a sidebar for recent conversations, a central conversation area, and a message composer. The welcome screen offers starter prompts; the user can also type a question and send it with Enter, using Shift+Enter for a new line.
+![The authenticated workspace with a real test profile](visuals/14-authenticated-home.jpg)
 
-**The authenticated workspace screenshot is intentionally absent:** the only available backend deployment is suspended, and no genuine authenticated session could be established during this run. The documented UI behavior below is based on the actual frontend and backend source; it is not represented as a successful live walkthrough.
+This is the actual signed-in interface, not a designed mockup. The local end-to-end run created a test account through the signup form; the UI then loaded that account's profile from `GET /user/user/me`, its plan from `GET /subscribe/subscription/status`, and its recent rooms from `GET /ChatRoom/chatroom`. The visible profile name and Basic tier came from the test backend/database.
 
-### Start a new conversation
+A signed-in user gets a sidebar for recent conversations, a central conversation area, a message composer, starter prompts and account controls. Enter submits a question, while Shift+Enter inserts a new line.
 
-When the user sends a first message, the frontend first creates a room with a title derived from that prompt. The backend's `POST /ChatRoom/chatroom` inserts a `chatrooms` row linked to the authenticated user. The frontend then selects the returned room and sends the message.
+### Start a conversation and save a real message
 
-A conversation title is therefore not just a card in the UI: it corresponds to a database row that should reappear in recent history after the page is refreshed.
+![A real user message in the conversation interface](visuals/15-real-conversation-message.jpg)
 
-### Return to a previous conversation
+The browser sent the real prompt “Explain REST APIs with a bookstore example.” The frontend created the room through `POST /ChatRoom/chatroom`, then submitted the message through `POST /message/{chatroom_id}/message`. Both returned HTTP 200 in the local integrated test. PostgreSQL confirmed a corresponding `chatrooms` row and `chat_messages` row; the message job also appeared in Redis `openai_chat_queue`.
 
-The sidebar calls `GET /ChatRoom/chatroom` to load recent rooms. Opening one calls `GET /ChatRoom/chatroom/{chatroom_id}` to retrieve the room and its messages. The backend scopes these operations to the user represented by the bearer token.
+The screenshot shows the app waiting for a reply. **The assistant answer itself was not verified:** the test used no valid OpenAI key and the background worker was intentionally not run against a fake credential. No AI-generated content has been invented or inserted into the database to make the screenshot look complete.
 
-The sidebar search filters the list of rooms already loaded in the browser; it is not a separate server-side search endpoint. Choosing **New chat** clears the current view without deleting saved conversations.
+### Reopen the saved conversation
 
-### Send a message and receive an answer
+![The same conversation after reloading and opening it again](visuals/21-persisted-conversation-history.jpg)
 
-The composer sends `POST /message/{chatroom_id}/message`. The backend checks the user's plan and room ownership, saves the user message in `chat_messages`, and pushes a job to the Upstash Redis list `openai_chat_queue`. A background worker reads that job, calls OpenAI `gpt-3.5-turbo`, and stores the assistant reply. The frontend polls the room detail endpoint while waiting for the reply.
+After reloading the frontend, the recent-room list contained the saved room. Opening it called `GET /ChatRoom/chatroom/{chatroom_id}`, and the same user message appeared again. This confirms the browser → API → PostgreSQL write/read path for a saved user message rather than only an in-memory frontend state.
 
-That sequence is the product's core experience, but it has **not** been verified end to end here: the deployed API is suspended, and no successful live Redis-to-worker-to-model response was available. No assistant answer has been invented for this document.
+The recent-room cache also needed a correction: newly created rooms now invalidate the per-user Redis cache so an earlier cached empty list does not hide the new room after reload.
+
+### Return to the workspace
+
+The sidebar's **New chat** action clears the current view, not the saved room. Selecting a recent item reopens its stored history. Search filters the room list already loaded in the browser; it is not a separate server-side search route.
 
 ## 5. Your account, security and plan
 
-These are the account tools present in the application. They are described here so a visitor can understand the workspace, but no successful authenticated screenshot is claimed while the API is unavailable.
-
 ### Account details and appearance
 
-The Account panel is designed to show the user's name, mobile number, verification state, and Basic/Pro tier. The theme button switches between light and dark appearance and persists the preference in browser local storage under `gemini_theme`. That preference is local to the browser; it is not a PostgreSQL setting.
+![Account settings with the real local test profile](visuals/16-account-settings.jpg)
+
+The Account panel displays the same profile and Basic tier fetched from the local backend. The theme button switches between light and dark appearance and persists the preference in browser local storage under `gemini_theme`; this preference is local to the browser, not a PostgreSQL setting.
+
+![The signed-in workspace in dark appearance](visuals/19-dark-theme-workspace.jpg)
 
 ### Security
 
-The Security panel submits the current and new password to `POST /auth/change-password`. The frontend checks for at least eight characters, a letter, a number, and a special character before sending. The server remains responsible for validating the token and applying the update. No real account password was changed during this run.
+![Security and privacy settings](visuals/17-security-settings.jpg)
+
+The Security panel submits the current and new password to `POST /auth/change-password`. The frontend checks for at least eight characters, a letter, a number, and a special character before sending. The panel was opened and captured, but no password was changed during this walkthrough.
 
 ### Basic and Pro
 
-The Plan panel calls `GET /subscribe/subscription/status` to display the stored subscription tier. Basic is described in the code as allowing five messages per day; Pro removes that product limit. The upgrade action calls `POST /subscribe/pro` and redirects to the returned Stripe Checkout URL.
+![Plan information for the logged-in test account](visuals/18-plan-settings.jpg)
 
-After checkout, `POST /subscribe/webhook/stripe` is intended to verify the Stripe signature and update the user's `subscription_tier` after a completed session. No checkout or live payment was initiated.
+The Plan panel reads `GET /subscribe/subscription/status` and shows the account's stored tier. Basic is described in the code as allowing five messages per day; Pro removes that product limit. The upgrade action calls `POST /subscribe/pro` and redirects to the returned Stripe Checkout URL.
+
+After checkout, `POST /subscribe/webhook/stripe` is intended to verify the Stripe signature and update the user's `subscription_tier` after a completed session. No checkout or live payment was initiated, so a paid upgrade is not represented as tested.
 
 ### Is there a separate admin workspace?
 
@@ -139,7 +147,7 @@ The backend migrations define four PostgreSQL tables:
 | `chat_messages` | User and assistant messages linked to a room |
 | `migrations` | Applied SQL migration filenames and timestamps |
 
-The actual backend was started against a disposable local PostgreSQL database. Its migrations created all four tables, and `psql` confirmed that the schema existed. Negative API checks also confirmed that requests without a token to the profile, room list, room detail, subscription status, and message routes returned HTTP 403; the test database remained unchanged after those checks.
+The actual backend was started against a disposable local PostgreSQL database and a local Redis server. Migrations created all four tables. The real browser flow then created users, chatrooms and chat messages through the API; a subsequent database query confirmed rows in all three application tables. The protected profile, room list, room detail, subscription status and message routes also returned HTTP 403 when tested without a bearer token. These were isolated test records and did not change production user or payment data.
 
 Relevant implementation: [database migrations](https://github.com/faizansaiyed123/gemini-backend-clone/tree/main/src/database), [chatroom service](https://github.com/faizansaiyed123/gemini-backend-clone/blob/main/src/services/chatroom_service.py), [message service](https://github.com/faizansaiyed123/gemini-backend-clone/blob/main/src/services/message_service.py), [background worker](https://github.com/faizansaiyed123/gemini-backend-clone/blob/main/src/services/worker.py).
 
@@ -151,17 +159,24 @@ The homepage adapts to a narrow viewport and keeps the main call to action in vi
 
 ![Mobile navigation opened](visuals/04-mobile-nav.jpg)
 
-The navigation menu expands and exposes the page links on mobile. The authenticated conversation sidebar is also responsive in the frontend code, but its signed-in behavior remains unverified until a valid session can be established.
+The navigation menu expands and exposes the page links on mobile.
+
+![The recent saved conversation in the mobile sidebar](visuals/20-mobile-sidebar-with-real-history.jpg)
+
+This authenticated mobile capture shows the real saved conversation in the sidebar. The browser reloaded the room list from the local API and could open the saved message at the narrow viewport, not just the public navigation menu.
 
 ## 8. A few implementation details worth knowing
 
 - **The product name and model provider differ.** The backend worker calls OpenAI `gpt-3.5-turbo`; it does not call Google's Gemini API.
 - **OTP is development-oriented today.** The current backend returns an OTP to the client; this should be replaced with secure out-of-band delivery for production.
-- **Queue delivery needs stronger failure handling.** The queue helper currently logs exceptions without propagating failure, so a saved user message can be left without a queued AI job. This remains open for a reliable retry/outbox design and live Redis verification.
-- **Two backend fixes have been applied on main.** The Basic-plan limiter now uses a synchronous Redis client while the chatroom cache retains its async client, and Stripe webhook requests with missing or invalid signatures now return HTTP 400. The isolated rate-limit boundary check passed; the missing-signature webhook was retested locally and returned HTTP 400. Live provider checks remain outstanding.
+- **The actual chat path exposed a startup race.** On the first integrated run, concurrent requests could reach lazy SQLAlchemy table reflection together and the message insert failed with “Unconsumed column names”. The backend now reflects the user, room and message tables immediately after migrations, before accepting requests. The subsequent integrated browser run successfully submitted and persisted the message.
+- **The recent-room cache needed invalidation.** Creating a room now clears the user's cached recent-room list so reloading does not keep showing a stale empty list. This was verified by reloading the frontend and opening the saved room again.
+- **Queue delivery still needs stronger failure handling.** The queue helper logs exceptions without propagating them, so a saved message can be left without a queued job. A durable retry/outbox design remains open.
+- **Other backend hardening is on main.** The Basic-plan limiter uses a synchronous Redis client while chatroom caching keeps the async client. Stripe webhook requests with missing or invalid signatures return HTTP 400; the missing-signature case was retested locally. Live Stripe checkout and a successful real model response are not verified.
+- **OTP remains development-oriented.** The backend returns the one-time code to the client. Production should deliver codes through a separate secure channel instead.
 
 ## Where the tour can continue
 
-To add genuine screenshots of successful sign-in, saved conversations, assistant answers, Account/Security/Plan panels, and a completed Stripe test flow, the owner needs to resume the suspended Render API. Then the walkthrough can follow a dedicated test account through the actual browser, capture each successful UI state, and verify each write/read in PostgreSQL and each asynchronous response through Redis and the worker.
+The local integrated run now covers registration, bearer-token profile loading, subscription status, room creation, message submission, PostgreSQL persistence, Redis queue insertion, history reload and reopening a saved message. The Account, Security and Plan screens are captured with the real local test profile.
 
-Until that prerequisite is available, this document presents the real public experience and explains the intended authenticated journeys without passing off a designed screen or synthetic assistant answer as a verified result.
+Two end-to-end legs still need valid production-like provider credentials and services: the worker must consume the queued job and return a genuine OpenAI answer, and a Stripe test checkout must be completed and verified by its signed webhook. The production Render API is currently suspended, so neither those steps nor the live deployed flow has been verified. The screenshots don't pass off a test spinner as an AI answer or a displayed plan as a completed payment.

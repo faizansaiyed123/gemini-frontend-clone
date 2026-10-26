@@ -58,7 +58,11 @@ The form checks entries before attempting an account-creation request. This is u
 
 ![Sign-in screen](visuals/03-signin-form.jpg)
 
-Sign-in uses a mobile number and a one-time code rather than a password entry screen. This is the intended route back to an existing workspace.
+Sign-in uses a mobile number and a one-time code rather than a password entry screen. The local browser run completed `POST /auth/send-otp` and `POST /auth/verify-otp`, stored the returned bearer token, and loaded the profile and recent-chat list through the protected APIs.
+
+![Returning user after signing in with saved conversation history](visuals/22-returning-user-history.jpg)
+
+The saved “Explain REST APIs with a bookstore example.” conversation reappeared after this fresh sign-in, and opening it loaded the same message from the backend. This verifies that a returning session can recover a previously saved room after authentication, rather than relying on the old browser tab's in-memory state.
 
 ### Invalid mobile number
 

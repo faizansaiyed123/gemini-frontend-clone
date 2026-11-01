@@ -144,12 +144,12 @@ The inspected frontend and backend do not expose a separate administrator dashbo
 
 The backend migrations define four PostgreSQL tables:
 
-| Table           | What it stores                                                                        |
-| --------------- | ------------------------------------------------------------------------------------- |
-| `users`         | Mobile number, password hash, OTP metadata, verification status and subscription tier |
-| `chatrooms`     | Conversation title and owning user                                                    |
-| `chat_messages` | User and assistant messages linked to a room                                          |
-| `migrations`    | Applied SQL migration filenames and timestamps                                        |
+| Table | What it stores |
+| --- | --- |
+| `users` | Mobile number, password hash, OTP metadata, verification status and subscription tier |
+| `chatrooms` | Conversation title and owning user |
+| `chat_messages` | User and assistant messages linked to a room |
+| `migrations` | Applied SQL migration filenames and timestamps |
 
 The actual backend was started against a disposable local PostgreSQL database and a local Redis server. Migrations created all four tables. The real browser flow then created users, chatrooms and chat messages through the API; a subsequent database query confirmed rows in all three application tables. The protected profile, room list, room detail, subscription status and message routes also returned HTTP 403 when tested without a bearer token. These were isolated test records and did not change production user or payment data.
 
@@ -177,7 +177,7 @@ This authenticated mobile capture shows the real saved conversation in the sideb
 - **The recent-room cache needed invalidation.** Creating a room now clears the user's cached recent-room list so reloading does not keep showing a stale empty list. This was verified by reloading the frontend and opening the saved room again.
 - **Queue delivery still needs stronger failure handling.** The queue helper logs exceptions without propagating them, so a saved message can be left without a queued job. A durable retry/outbox design remains open.
 - **Other backend hardening is on main.** The Basic-plan limiter uses a synchronous Redis client while chatroom caching keeps the async client. Stripe webhook requests with missing or invalid signatures return HTTP 400; the missing-signature case was retested locally. Live Stripe checkout and a successful real model response are not verified.
-- **OTP remains development-oriented.** The backend returns the one-time code to the client. Production should deliver codes through a separate secure channel instead.
+- **OTP remains development-oriented.** The backend returns the one-time code to the client. Production should deliver codes through a separate secure channel.
 
 ## Where the tour can continue
 

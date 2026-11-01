@@ -177,7 +177,7 @@ This authenticated mobile capture shows the real saved conversation in the sideb
 - **The recent-room cache needed invalidation.** Creating a room now clears the user's cached recent-room list so reloading does not keep showing a stale empty list. This was verified by reloading the frontend and opening the saved room again.
 - **Queue delivery still needs stronger failure handling.** The queue helper logs exceptions without propagating them, so a saved message can be left without a queued job. A durable retry/outbox design remains open.
 - **Other backend hardening is on main.** The Basic-plan limiter uses a synchronous Redis client while chatroom caching keeps the async client. Stripe webhook requests with missing or invalid signatures return HTTP 400; the missing-signature case was retested locally. Live Stripe checkout and a successful real model response are not verified.
-- **OTP remains development-oriented.** The backend returns the one-time code to the client. Production should deliver codes through a separate secure channel.
+- **OTP remains development-oriented.** The backend returns the one-time code to the client. Production should deliver codes through a separate secure channel instead.
 
 ## Where the tour can continue
 

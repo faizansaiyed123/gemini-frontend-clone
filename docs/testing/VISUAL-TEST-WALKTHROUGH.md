@@ -144,12 +144,12 @@ The inspected frontend and backend do not expose a separate administrator dashbo
 
 The backend migrations define four PostgreSQL tables:
 
-| Table | What it stores |
-| --- | --- |
-| `users` | Mobile number, password hash, OTP metadata, verification status and subscription tier |
-| `chatrooms` | Conversation title and owning user |
-| `chat_messages` | User and assistant messages linked to a room |
-| `migrations` | Applied SQL migration filenames and timestamps |
+| Table           | What it stores                                                                        |
+| --------------- | ------------------------------------------------------------------------------------- |
+| `users`         | Mobile number, password hash, OTP metadata, verification status and subscription tier |
+| `chatrooms`     | Conversation title and owning user                                                    |
+| `chat_messages` | User and assistant messages linked to a room                                          |
+| `migrations`    | Applied SQL migration filenames and timestamps                                        |
 
 The actual backend was started against a disposable local PostgreSQL database and a local Redis server. Migrations created all four tables. The real browser flow then created users, chatrooms and chat messages through the API; a subsequent database query confirmed rows in all three application tables. The protected profile, room list, room detail, subscription status and message routes also returned HTTP 403 when tested without a bearer token. These were isolated test records and did not change production user or payment data.
 

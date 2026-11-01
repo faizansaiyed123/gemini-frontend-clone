@@ -51,20 +51,20 @@ The backend builds its Checkout return URLs from its own `FRONTEND_URL` setting.
 
 The API returns most successful responses as `{ code, data, message, status }`; the client unwraps `data` and checks HTTP and envelope errors.
 
-| Feature                           | Endpoint                               |
-| --------------------------------- | -------------------------------------- |
-| Create account                    | `POST /auth/signup`                    |
-| Request sign-in OTP               | `POST /auth/send-otp`                  |
-| Verify OTP / obtain token         | `POST /auth/verify-otp`                |
-| Request recovery OTP              | `POST /auth/forgot-password`           |
-| Change password                   | `POST /auth/change-password`           |
-| Reset password after verification | `POST /auth/reset-password`            |
-| Current user                      | `GET /user/user/me`                    |
-| List / create chats               | `GET/POST /ChatRoom/chatroom`          |
-| Conversation with messages        | `GET /ChatRoom/chatroom/{chatroom_id}` |
-| Send message                      | `POST /message/{chatroom_id}/message`  |
-| Start Stripe Checkout             | `POST /subscribe/pro`                  |
-| Subscription tier                 | `GET /subscribe/subscription/status`   |
+| Feature | Endpoint |
+| --- | --- |
+| Create account | `POST /auth/signup` |
+| Request sign-in OTP | `POST /auth/send-otp` |
+| Verify OTP / obtain token | `POST /auth/verify-otp` |
+| Request recovery OTP | `POST /auth/forgot-password` |
+| Change password | `POST /auth/change-password` |
+| Reset password after verification | `POST /auth/reset-password` |
+| Current user | `GET /user/user/me` |
+| List / create chats | `GET/POST /ChatRoom/chatroom` |
+| Conversation with messages | `GET /ChatRoom/chatroom/{chatroom_id}` |
+| Send message | `POST /message/{chatroom_id}/message` |
+| Start Stripe Checkout | `POST /subscribe/pro` |
+| Subscription tier | `GET /subscribe/subscription/status` |
 
 The path casing is intentional: the backend mounts chatroom routes beneath `/ChatRoom`.
 

@@ -5,7 +5,7 @@ async function signIn(page) {
   await page.getByRole('button', { name: 'Sign in' }).first().click();
   await page.getByLabel('Mobile number').fill('9876543210');
   await page.getByRole('button', { name: /send sign-in code/i }).click();
-  await expect(page.getByText('246810')).toBeVisible();
+  await expect(page.locator('.demo-code strong')).toHaveText('246810');
   await page.getByLabel('6-digit verification code').fill('246810');
   await page.getByRole('button', { name: /verify and continue/i }).click();
   await expect(page.getByText('What’s on your mind?')).toBeVisible();

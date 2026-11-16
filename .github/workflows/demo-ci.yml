@@ -1,0 +1,35 @@
+name: Gemini frontend demo CI
+
+on:
+  push:
+    branches: [demo]
+  pull_request:
+    branches: [demo]
+
+permissions:
+  contents: read
+
+jobs:
+  frontend-demo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out demo branch
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install project and browser-test dependencies
+        run: |
+          npm install
+          npm install --no-save @playwright/test
+      - name: Check formatting
+        run: npm run format:check
+      - name: Type-check and build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run browser demo tests
+        env:
+          CI: true
+        run: npx playwright test

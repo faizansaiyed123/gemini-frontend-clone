@@ -27,6 +27,7 @@ test('demo login, conversation, asynchronous response, and persisted history', a
   ).toBeVisible({ timeout: 12_000 });
 
   await page.reload();
+  await page.getByRole('button', { name: /Explain how RAG works/ }).click();
   await expect(page.getByText('Explain how RAG works in an AI application')).toBeVisible();
   await expect(
     page.getByText(/Retrieval-Augmented Generation \(RAG\)/),

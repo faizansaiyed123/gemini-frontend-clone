@@ -41,6 +41,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
+import { demoRequest, resetDemoData } from './demo/api';
 import './styles.css';
 
 const API_BASE = (
@@ -49,6 +50,7 @@ const API_BASE = (
 ).replace(/\/+$/, '');
 const TOKEN_KEY = 'gemini_token';
 const THEME_KEY = 'gemini_theme';
+const DEMO_MODE = true;
 
 type Envelope<T> = {
   code?: number;
@@ -88,6 +90,7 @@ async function api<T>(
   init: RequestInit = {},
   tokenOverride?: string,
 ): Promise<T> {
+  if (DEMO_MODE) return demoRequest<T>(path, init, tokenOverride);
   const token = tokenOverride ?? window.localStorage.getItem(TOKEN_KEY) ?? '';
   const headers = new Headers(init.headers);
   headers.set('Accept', 'application/json');
@@ -437,6 +440,12 @@ function AuthView({
                     : 'Create an account and give your ideas a little more room.'}
                 </p>
               </div>
+              {DEMO_MODE && mode === 'signin' && (
+                <p className="demo-account-hint">
+                  Demo access: <strong>9876543210</strong>
+                  <span>OTP: 246810</span>
+                </p>
+              )}
               <div className="auth-tabs">
                 <button
                   className={mode === 'signin' ? 'auth-tab active' : 'auth-tab'}
@@ -528,7 +537,7 @@ function AuthView({
                       {demoOtp && (
                         <div className="demo-code">
                           <ShieldCheck size={15} />
-                          <span>Test code from your current backend</span>
+                          <span>Demo-only OTP</span>
                           <strong>{demoOtp}</strong>
                           <button
                             type="button"
@@ -730,7 +739,7 @@ function AuthView({
                   {demoOtp && (
                     <div className="demo-code">
                       <ShieldCheck size={15} />
-                      <span>Test code from backend</span>
+                      <span>Demo-only OTP</span>
                       <strong>{demoOtp}</strong>
                       <button
                         type="button"
@@ -1633,6 +1642,11 @@ function App() {
     }
   };
 
+  const resetDemo = () => {
+    resetDemoData();
+    window.location.replace('/');
+  };
+
   const signOut = () => {
     window.localStorage.removeItem(TOKEN_KEY);
     setToken('');
@@ -1910,6 +1924,18 @@ function App() {
             )}
           </div>
           <div className="topbar-actions">
+            {DEMO_MODE && (
+              <>
+                <span className="demo-mode-label">DEMO · Browser only</span>
+                <button
+                  className="demo-reset-button"
+                  type="button"
+                  onClick={resetDemo}
+                >
+                  Reset demo
+                </button>
+              </>
+            )}
             <span className="workspace-status">
               <span className="status-dot" /> Personal workspace
             </span>

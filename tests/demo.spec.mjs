@@ -21,14 +21,14 @@ test('demo login, conversation, asynchronous response, and persisted history', a
   await composer.fill('Explain how RAG works in an AI application');
   await page.getByRole('button', { name: 'Send message' }).click();
 
-  await expect(page.getByText('Explain how RAG works in an AI application')).toBeVisible();
+  await expect(page.locator('.user-bubble .message-body')).toHaveText('Explain how RAG works in an AI application');
   await expect(
     page.getByText(/Retrieval-Augmented Generation \(RAG\)/),
   ).toBeVisible({ timeout: 12_000 });
 
   await page.reload();
   await page.getByRole('button', { name: /Explain how RAG works/ }).click();
-  await expect(page.getByText('Explain how RAG works in an AI application')).toBeVisible();
+  await expect(page.locator('.user-bubble .message-body')).toHaveText('Explain how RAG works in an AI application');
   await expect(
     page.getByText(/Retrieval-Augmented Generation \(RAG\)/),
   ).toBeVisible();

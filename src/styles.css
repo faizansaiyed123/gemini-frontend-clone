@@ -3848,3 +3848,65 @@ textarea {
     transition: none;
   }
 }
+
+
+.demo-account-hint {
+  margin: 2px 0 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  color: var(--ink-soft);
+  background: var(--surface-soft);
+  font-size: 12px;
+}
+
+.demo-account-hint strong,
+.demo-account-hint span {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.demo-mode-label {
+  padding: 7px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  background: var(--surface);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.demo-reset-button {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  color: var(--ink-soft);
+  background: var(--surface);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.demo-reset-button:hover {
+  color: var(--ink);
+  background: var(--surface-soft);
+}
+
+@media (max-width: 760px) {
+  .demo-mode-label {
+    display: none;
+  }
+
+  .demo-reset-button {
+    min-height: 30px;
+    font-size: 10px;
+  }
+}

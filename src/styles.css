@@ -3849,7 +3849,6 @@ textarea {
   }
 }
 
-
 /* Gemini homepage: a conversation-first visual language. */
 .gemini-home {
   color: #272438;
@@ -3923,7 +3922,11 @@ textarea {
   overflow: hidden;
   padding: 34px clamp(24px, 6vw, 88px) 0;
   background:
-    radial-gradient(ellipse at 50% 30%, rgba(228, 223, 255, 0.68), transparent 44%),
+    radial-gradient(
+      ellipse at 50% 30%,
+      rgba(228, 223, 255, 0.68),
+      transparent 44%
+    ),
     linear-gradient(180deg, #fbfaff 0%, #f9f8ff 100%);
 }
 .gemini-hero-wash {
@@ -4013,7 +4016,9 @@ textarea {
   background: #6d60d3;
   font-size: 12px;
   font-weight: 800;
-  transition: transform 160ms ease, background 160ms ease;
+  transition:
+    transform 160ms ease,
+    background 160ms ease;
 }
 .gemini-primary-action:hover,
 .gemini-endnote-button:hover {
@@ -4088,7 +4093,10 @@ textarea {
   background: rgba(255, 255, 255, 0.66);
   font-size: 11px;
   font-weight: 600;
-  transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    background 150ms ease;
 }
 .gemini-prompt-option svg {
   flex: 0 0 auto;

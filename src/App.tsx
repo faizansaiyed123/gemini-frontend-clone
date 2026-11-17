@@ -892,7 +892,11 @@ function LandingView({ onStart }: { onStart: (mode: AuthMode) => void }) {
   return (
     <div className="landing-page gemini-home">
       <header className="landing-nav">
-        <a className="landing-brand" href="#home" aria-label="Gemini home">
+        <a
+          className="landing-brand"
+          href="#home"
+          aria-label="Gemini home"
+        >
           <BrandMark />
           <span>
             gemini<span className="brand-period">.</span>
@@ -907,13 +911,35 @@ function LandingView({ onStart }: { onStart: (mode: AuthMode) => void }) {
         >
           {mobileMenu ? <X /> : <Menu />}
         </button>
-        <nav className={mobileMenu ? 'landing-links landing-links-open' : 'landing-links'}>
-          <a href="#ways" onClick={() => setMobileMenu(false)}>Ways to use Gemini</a>
-          <a href="#conversation" onClick={() => setMobileMenu(false)}>A conversation</a>
-          <button className="landing-login" type="button" onClick={() => onStart('signin')}>
+        <nav
+          className={
+            mobileMenu ? 'landing-links landing-links-open' : 'landing-links'
+          }
+        >
+          <a
+            href="#ways"
+            onClick={() => setMobileMenu(false)}
+          >
+            Ways to use Gemini
+          </a>
+          <a
+            href="#conversation"
+            onClick={() => setMobileMenu(false)}
+          >
+            A conversation
+          </a>
+          <button
+            className="landing-login"
+            type="button"
+            onClick={() => onStart('signin')}
+          >
             Sign in
           </button>
-          <button className="landing-nav-cta" type="button" onClick={() => onStart('signup')}>
+          <button
+            className="landing-nav-cta"
+            type="button"
+            onClick={() => onStart('signup')}
+          >
             Get started <ArrowRight size={15} />
           </button>
         </nav>
@@ -921,36 +947,55 @@ function LandingView({ onStart }: { onStart: (mode: AuthMode) => void }) {
 
       <main id="home">
         <section className="gemini-hero">
-          <div className="gemini-hero-wash" aria-hidden="true" />
+          <div
+            className="gemini-hero-wash"
+            aria-hidden="true"
+          />
           <div className="gemini-hero-topline">
             <span>THINK / CREATE / EXPLORE</span>
             <span>AN OPEN SPACE FOR CURIOSITY</span>
           </div>
 
           <div className="gemini-hero-copy">
-            <p className="gemini-eyebrow"><Sparkles size={14} /> A LITTLE ROOM TO THINK</p>
+            <p className="gemini-eyebrow">
+              <Sparkles size={14} /> A LITTLE ROOM TO THINK
+            </p>
             <h1>
               Start with a thought.
               <br />
               <em>See where it takes you.</em>
             </h1>
             <p className="gemini-hero-description">
-              A question, a rough idea, or something you have been trying to understand.
-              Bring it to Gemini and work through it, one conversation at a time.
+              A question, a rough idea, or something you have been trying to
+              understand. Bring it to Gemini and work through it, one
+              conversation at a time.
             </p>
             <div className="gemini-hero-actions">
-              <button className="gemini-primary-action" type="button" onClick={() => onStart('signup')}>
+              <button
+                className="gemini-primary-action"
+                type="button"
+                onClick={() => onStart('signup')}
+              >
                 Start exploring <ArrowRight size={17} />
               </button>
-              <a className="gemini-text-action" href="#conversation">
+              <a
+                className="gemini-text-action"
+                href="#conversation"
+              >
                 Read a sample conversation <span aria-hidden="true">↓</span>
               </a>
             </div>
           </div>
 
-          <section className="gemini-prompt-panel" id="preview" aria-labelledby="gemini-prompt-title">
+          <section
+            className="gemini-prompt-panel"
+            id="preview"
+            aria-labelledby="gemini-prompt-title"
+          >
             <div className="gemini-prompt-heading">
-              <span><Sparkles size={16} /> A place to begin</span>
+              <span>
+                <Sparkles size={16} /> A place to begin
+              </span>
               <span>CHOOSE A STARTING POINT</span>
             </div>
             <h2 id="gemini-prompt-title">What is on your mind today?</h2>
@@ -958,12 +1003,22 @@ function LandingView({ onStart }: { onStart: (mode: AuthMode) => void }) {
               {ideas.map((idea, index) => (
                 <button
                   key={idea}
-                  className={selectedIdea === index ? 'gemini-prompt-option is-selected' : 'gemini-prompt-option'}
+                  className={
+                    selectedIdea === index
+                      ? 'gemini-prompt-option is-selected'
+                      : 'gemini-prompt-option'
+                  }
                   type="button"
                   aria-pressed={selectedIdea === index}
                   onClick={() => setSelectedIdea(index)}
                 >
-                  {index === 0 ? <Lightbulb size={16} /> : index === 1 ? <Compass size={16} /> : <FileText size={16} />}
+                  {index === 0 ? (
+                    <Lightbulb size={16} />
+                  ) : index === 1 ? (
+                    <Compass size={16} />
+                  ) : (
+                    <FileText size={16} />
+                  )}
                   <span>{idea}</span>
                 </button>
               ))}
@@ -973,110 +1028,212 @@ function LandingView({ onStart }: { onStart: (mode: AuthMode) => void }) {
                 <Sparkles size={17} />
                 <span>{ideas[selectedIdea]}</span>
               </div>
-              <button type="button" onClick={() => onStart('signup')}>
+              <button
+                type="button"
+                onClick={() => onStart('signup')}
+              >
                 Create account to try it <ArrowRight size={16} />
               </button>
             </div>
-            <p className="gemini-prompt-note">Choose an idea to shape this preview. Sign in to start a real conversation.</p>
+            <p className="gemini-prompt-note">
+              Choose an idea to shape this preview. Sign in to start a real
+              conversation.
+            </p>
           </section>
 
           <div className="gemini-hero-foot">
             <span>NO PERFECT PROMPT REQUIRED</span>
-            <span>JUST START SOMEWHERE <ArrowRight size={13} /></span>
+            <span>
+              JUST START SOMEWHERE <ArrowRight size={13} />
+            </span>
           </div>
         </section>
 
-        <section className="gemini-ways" id="ways">
+        <section
+          className="gemini-ways"
+          id="ways"
+        >
           <div className="gemini-section-intro">
-            <p className="gemini-section-label">A CONVERSATION CAN GO MANY PLACES</p>
+            <p className="gemini-section-label">
+              A CONVERSATION CAN GO MANY PLACES
+            </p>
             <h2>
               Think it through.
               <br />
               <em>Make something.</em>
             </h2>
-            <p>Use one space to get unstuck, shape an idea, or follow a question a little further.</p>
+            <p>
+              Use one space to get unstuck, shape an idea, or follow a question
+              a little further.
+            </p>
           </div>
           <div className="gemini-ability-list">
             <article className="gemini-ability-row">
               <span className="gemini-ability-number">01</span>
-              <span className="gemini-ability-icon"><Lightbulb size={21} /></span>
+              <span className="gemini-ability-icon">
+                <Lightbulb size={21} />
+              </span>
               <div>
                 <span className="gemini-ability-kind">THINK</span>
                 <h3>Make the complicated feel clearer.</h3>
-                <p>Break down big questions, compare perspectives, and find a way into a difficult subject.</p>
+                <p>
+                  Break down big questions, compare perspectives, and find a way
+                  into a difficult subject.
+                </p>
               </div>
-              <span className="gemini-ability-mark" aria-hidden="true">↗</span>
+              <span
+                className="gemini-ability-mark"
+                aria-hidden="true"
+              >
+                ↗
+              </span>
             </article>
             <article className="gemini-ability-row">
               <span className="gemini-ability-number">02</span>
-              <span className="gemini-ability-icon"><Code2 size={21} /></span>
+              <span className="gemini-ability-icon">
+                <Code2 size={21} />
+              </span>
               <div>
                 <span className="gemini-ability-kind">CREATE</span>
                 <h3>Move from a blank page to a first draft.</h3>
-                <p>Brainstorm, write, code, and give an unfinished idea somewhere to go.</p>
+                <p>
+                  Brainstorm, write, code, and give an unfinished idea somewhere
+                  to go.
+                </p>
               </div>
-              <span className="gemini-ability-mark" aria-hidden="true">↗</span>
+              <span
+                className="gemini-ability-mark"
+                aria-hidden="true"
+              >
+                ↗
+              </span>
             </article>
             <article className="gemini-ability-row">
               <span className="gemini-ability-number">03</span>
-              <span className="gemini-ability-icon"><Compass size={21} /></span>
+              <span className="gemini-ability-icon">
+                <Compass size={21} />
+              </span>
               <div>
                 <span className="gemini-ability-kind">EXPLORE</span>
                 <h3>Follow your curiosity a little further.</h3>
-                <p>Learn at your pace, ask a follow-up, and connect the dots as you go.</p>
+                <p>
+                  Learn at your pace, ask a follow-up, and connect the dots as
+                  you go.
+                </p>
               </div>
-              <span className="gemini-ability-mark" aria-hidden="true">↗</span>
+              <span
+                className="gemini-ability-mark"
+                aria-hidden="true"
+              >
+                ↗
+              </span>
             </article>
           </div>
         </section>
 
-        <section className="gemini-conversation" id="conversation">
+        <section
+          className="gemini-conversation"
+          id="conversation"
+        >
           <div className="gemini-conversation-heading">
-            <p className="gemini-section-label">A SMALL EXAMPLE OF THE BACK-AND-FORTH</p>
-            <h2>Good questions can lead<br /><em>to useful next steps.</em></h2>
+            <p className="gemini-section-label">
+              A SMALL EXAMPLE OF THE BACK-AND-FORTH
+            </p>
+            <h2>
+              Good questions can lead
+              <br />
+              <em>to useful next steps.</em>
+            </h2>
           </div>
           <div className="gemini-exchange">
             <div className="gemini-exchange-question">
               <span>YOU ASKED</span>
-              <p>“How do I turn a big goal into something I can start today?”</p>
+              <p>
+                “How do I turn a big goal into something I can start today?”
+              </p>
             </div>
             <div className="gemini-exchange-answer">
-              <div className="gemini-answer-label"><BrandMark small /> GEMINI <span>EXAMPLE RESPONSE</span></div>
+              <div className="gemini-answer-label">
+                <BrandMark small /> GEMINI <span>EXAMPLE RESPONSE</span>
+              </div>
               <div>
-                <p>Make it small enough to begin. Try a simple three-step reset:</p>
+                <p>
+                  Make it small enough to begin. Try a simple three-step reset:
+                </p>
                 <ol>
-                  <li><span>01</span><div><strong>Name one outcome</strong><small>What would progress look like today?</small></div></li>
-                  <li><span>02</span><div><strong>Find the first 15 minutes</strong><small>Choose one action you can do now.</small></div></li>
-                  <li><span>03</span><div><strong>Make starting easy</strong><small>Prepare what you need, then begin.</small></div></li>
+                  <li>
+                    <span>01</span>
+                    <div>
+                      <strong>Name one outcome</strong>
+                      <small>What would progress look like today?</small>
+                    </div>
+                  </li>
+                  <li>
+                    <span>02</span>
+                    <div>
+                      <strong>Find the first 15 minutes</strong>
+                      <small>Choose one action you can do now.</small>
+                    </div>
+                  </li>
+                  <li>
+                    <span>03</span>
+                    <div>
+                      <strong>Make starting easy</strong>
+                      <small>Prepare what you need, then begin.</small>
+                    </div>
+                  </li>
                 </ol>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="gemini-endnote" id="about">
+        <section
+          className="gemini-endnote"
+          id="about"
+        >
           <div>
             <p className="gemini-section-label">THE NEXT GOOD IDEA IS YOURS</p>
-            <h2>Bring the question.<br /><em>We'll find the next step.</em></h2>
+            <h2>
+              Bring the question.
+              <br />
+              <em>We'll find the next step.</em>
+            </h2>
             <p>No perfect prompt needed. Just bring your curiosity.</p>
           </div>
-          <button className="gemini-endnote-button" type="button" onClick={() => onStart('signup')}>
+          <button
+            className="gemini-endnote-button"
+            type="button"
+            onClick={() => onStart('signup')}
+          >
             Create your account <ArrowRight size={17} />
           </button>
         </section>
       </main>
 
       <footer className="landing-footer gemini-footer">
-        <a className="landing-brand" href="#home">
+        <a
+          className="landing-brand"
+          href="#home"
+        >
           <BrandMark />
-          <span>gemini<span className="brand-period">.</span></span>
+          <span>
+            gemini<span className="brand-period">.</span>
+          </span>
         </a>
         <span>Made for curious minds.</span>
         <div>
-          <a href="https://github.com/faizansaiyed123/gemini-frontend-clone" target="_blank" rel="noreferrer">
+          <a
+            href="https://github.com/faizansaiyed123/gemini-frontend-clone"
+            target="_blank"
+            rel="noreferrer"
+          >
             <Code2 size={14} /> Source code
           </a>
-          <button type="button" onClick={() => onStart('signin')}>
+          <button
+            type="button"
+            onClick={() => onStart('signin')}
+          >
             Sign in <ArrowRight size={14} />
           </button>
         </div>

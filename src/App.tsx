@@ -882,18 +882,20 @@ function formatTime(value?: string) {
 
 function LandingView({ onStart }: { onStart: (mode: AuthMode) => void }) {
   const [mobileMenu, setMobileMenu] = useState(false);
-  const [prompt, setPrompt] = useState(0);
+  const [selectedIdea, setSelectedIdea] = useState(0);
   const ideas = [
-    'Explain a complex idea simply',
-    'Plan a productive week',
-    'Help me start a creative project',
+    'Explain something complicated in a simpler way',
+    'Help me plan a more focused week',
+    'Give me a first step for a creative project',
   ];
+
   return (
-    <div className="landing-page">
+    <div className="landing-page gemini-home">
       <header className="landing-nav">
         <a
           className="landing-brand"
           href="#home"
+          aria-label="Gemini home"
         >
           <BrandMark />
           <span>
@@ -902,7 +904,9 @@ function LandingView({ onStart }: { onStart: (mode: AuthMode) => void }) {
         </a>
         <button
           className="landing-menu-toggle"
+          type="button"
           aria-label="Toggle navigation"
+          aria-expanded={mobileMenu}
           onClick={() => setMobileMenu(!mobileMenu)}
         >
           {mobileMenu ? <X /> : <Menu />}
@@ -913,395 +917,301 @@ function LandingView({ onStart }: { onStart: (mode: AuthMode) => void }) {
           }
         >
           <a
-            href="#features"
+            href="#ways"
             onClick={() => setMobileMenu(false)}
           >
-            Features
+            Ways to use Gemini
           </a>
           <a
-            href="#preview"
+            href="#conversation"
             onClick={() => setMobileMenu(false)}
           >
-            Preview
-          </a>
-          <a
-            href="#about"
-            onClick={() => setMobileMenu(false)}
-          >
-            About
+            A conversation
           </a>
           <button
             className="landing-login"
+            type="button"
             onClick={() => onStart('signin')}
           >
-            Log in
+            Sign in
           </button>
           <button
             className="landing-nav-cta"
+            type="button"
             onClick={() => onStart('signup')}
           >
             Get started <ArrowRight size={15} />
           </button>
         </nav>
       </header>
+
       <main id="home">
-        <section className="landing-hero">
-          <div className="hero-glow hero-glow-one" />
-          <div className="hero-glow hero-glow-two" />
-          <div className="hero-copy">
-            <div className="hero-kicker">
-              <Sparkles size={14} /> YOUR IDEAS, MEET YOUR AI <span />
-            </div>
-            <h1>
-              A little more
-              <br />
-              <em>wonder.</em> A lot more
-              <br className="hero-desktop-break" />{' '}
-              <strong>possibility.</strong>
-            </h1>
-            <p className="hero-description">
-              Your space to think out loud, untangle the complicated, and turn
-              “what if?” into what’s next.
+        <section className="gemini-hero">
+          <div
+            className="gemini-hero-wash"
+            aria-hidden="true"
+          />
+          <div className="gemini-hero-topline">
+            <span>THINK / CREATE / EXPLORE</span>
+            <span>AN OPEN SPACE FOR CURIOSITY</span>
+          </div>
+
+          <div className="gemini-hero-copy">
+            <p className="gemini-eyebrow">
+              <Sparkles size={14} /> A LITTLE ROOM TO THINK
             </p>
-            <div className="hero-actions">
+            <h1>
+              Start with a thought.
+              <br />
+              <em>See where it takes you.</em>
+            </h1>
+            <p className="gemini-hero-description">
+              A question, a rough idea, or something you have been trying to
+              understand. Bring it to Gemini and work through it, one
+              conversation at a time.
+            </p>
+            <div className="gemini-hero-actions">
               <button
-                className="hero-primary"
+                className="gemini-primary-action"
+                type="button"
                 onClick={() => onStart('signup')}
               >
                 Start exploring <ArrowRight size={17} />
               </button>
               <a
-                className="hero-secondary"
-                href="#preview"
+                className="gemini-text-action"
+                href="#conversation"
               >
-                <span>↓</span> Take a quick look
+                Read a sample conversation <span aria-hidden="true">↓</span>
               </a>
             </div>
-            <div className="hero-social-proof">
-              <div className="avatar-stack">
-                <span>✦</span>
-                <span>✳</span>
-                <span>◈</span>
-              </div>
-              <div>
-                <strong>Your next idea starts here.</strong>
-                <span>Curiosity encouraged. Blank pages not required.</span>
-              </div>
-            </div>
           </div>
-          <div className="hero-art">
-            <div className="orbit orbit-a" />
-            <div className="orbit orbit-b" />
-            <div className="hero-spark hero-spark-a">✳</div>
-            <div className="hero-spark hero-spark-b">✧</div>
-            <div className="preview-window">
-              <div className="preview-topbar">
-                <div className="preview-dots">
-                  <i />
-                  <i />
-                  <i />
-                </div>
-                <div className="preview-title">
-                  <BrandMark small /> Gemini <span>· AI workspace</span>
-                </div>
-                <span className="preview-live">
-                  <i /> READY
-                </span>
-              </div>
-              <div className="preview-body">
-                <div className="preview-greeting">
-                  <div className="preview-gem">
-                    <Sparkles size={21} />
-                  </div>
-                  <div>
-                    <span>YOUR CREATIVE COMPANION</span>
-                    <h3>Where shall we begin?</h3>
-                  </div>
-                </div>
-                <p className="preview-subtitle">
-                  A thought, a question, a half-formed idea. Bring it all.
-                </p>
-                <div className="preview-suggestions">
-                  {ideas.map((item, i) => (
-                    <button
-                      key={item}
-                      className={
-                        prompt === i
-                          ? 'preview-suggestion active'
-                          : 'preview-suggestion'
-                      }
-                      onClick={() => setPrompt(i)}
-                    >
-                      <span>
-                        {i === 0 ? (
-                          <Lightbulb size={17} />
-                        ) : i === 1 ? (
-                          <Compass size={17} />
-                        ) : (
-                          <FileText size={17} />
-                        )}
-                      </span>
-                      <span>{item}</span>
-                      <ArrowRight size={14} />
-                    </button>
-                  ))}
-                </div>
-                <div className="preview-composer">
-                  <span>{ideas[prompt]}</span>
-                  <button
-                    onClick={() => onStart('signup')}
-                    aria-label="Try this prompt"
-                  >
-                    <ArrowRight size={17} />
-                  </button>
-                </div>
-                <div className="preview-disclaimer">
-                  Interactive preview · Sign up to start chatting
-                </div>
-              </div>
-            </div>
-            <div className="floating-note floating-note-top">
-              <span className="floating-note-icon">
-                <Zap size={16} />
-              </span>
-              <span>
-                <strong>Ideas in motion</strong>
-                <small>From thought to action</small>
-              </span>
-              <span className="note-spark">✦</span>
-            </div>
-            <div className="floating-note floating-note-bottom">
-              <span className="floating-check">
-                <Check size={16} />
-              </span>
-              <span>
-                <strong>Your thinking space</strong>
-                <small>Saved conversations, all in one place</small>
-              </span>
-            </div>
-          </div>
-          <a
-            className="hero-scroll"
-            href="#features"
+
+          <section
+            className="gemini-prompt-panel"
+            id="preview"
+            aria-labelledby="gemini-prompt-title"
           >
-            SCROLL TO EXPLORE <ArrowDown size={13} />
-          </a>
-        </section>
-        <section className="landing-marquee">
-          <span>THINK BIGGER</span>
-          <i>✳</i>
-          <span>MAKE SOMETHING</span>
-          <i>✳</i>
-          <span>GET UNSTUCK</span>
-          <i>✳</i>
-          <span>STAY CURIOUS</span>
-          <i>✳</i>
-        </section>
-        <section
-          className="landing-features section-wrap"
-          id="features"
-        >
-          <div className="section-heading">
-            <div className="section-eyebrow">A SPACE FOR EVERY SIDE OF YOU</div>
-            <h2>
-              More than answers.
-              <br />
-              <span>A spark for what’s next.</span>
-            </h2>
-            <p>
-              Whether you’re figuring things out or making something new, start
-              with a conversation.
-            </p>
-          </div>
-          <div className="feature-grid">
-            <article className="feature-card feature-card-large">
-              <div className="feature-icon violet">
-                <Lightbulb size={21} />
+            <div className="gemini-prompt-heading">
+              <span>
+                <Sparkles size={16} /> A place to begin
+              </span>
+              <span>CHOOSE A STARTING POINT</span>
+            </div>
+            <h2 id="gemini-prompt-title">What is on your mind today?</h2>
+            <div className="gemini-prompt-options">
+              {ideas.map((idea, index) => (
+                <button
+                  key={idea}
+                  className={
+                    selectedIdea === index
+                      ? 'gemini-prompt-option is-selected'
+                      : 'gemini-prompt-option'
+                  }
+                  type="button"
+                  aria-pressed={selectedIdea === index}
+                  onClick={() => setSelectedIdea(index)}
+                >
+                  {index === 0 ? (
+                    <Lightbulb size={16} />
+                  ) : index === 1 ? (
+                    <Compass size={16} />
+                  ) : (
+                    <FileText size={16} />
+                  )}
+                  <span>{idea}</span>
+                </button>
+              ))}
+            </div>
+            <div className="gemini-prompt-preview">
+              <div>
+                <Sparkles size={17} />
+                <span>{ideas[selectedIdea]}</span>
               </div>
-              <span className="feature-number">01 / THINK</span>
-              <h3>Make the complicated feel simple.</h3>
-              <p>
-                Break down big questions, explore fresh perspectives, and find a
-                clearer way forward.
-              </p>
-              <div className="feature-visual idea-visual">
-                <span className="idea-orb">✳</span>
-                <span className="idea-ring ring-one" />
-                <span className="idea-ring ring-two" />
-                <span className="idea-label">CLARITY, IN MOTION</span>
-              </div>
-            </article>
-            <article className="feature-card">
-              <div className="feature-icon peach">
-                <Code2 size={21} />
-              </div>
-              <span className="feature-number">02 / CREATE</span>
-              <h3>Go from blank page to first draft.</h3>
-              <p>
-                Brainstorm, write, code, and shape the idea you can almost see.
-              </p>
-              <div className="code-visual">
-                <span>
-                  const idea = <b>"something brilliant"</b>
-                </span>
-                <span>
-                  idea.<em>makeItReal</em>() <i>↗</i>
-                </span>
-                <div className="code-progress">
-                  <span />
-                </div>
-              </div>
-            </article>
-            <article className="feature-card">
-              <div className="feature-icon mint">
-                <Compass size={21} />
-              </div>
-              <span className="feature-number">03 / EXPLORE</span>
-              <h3>Follow your curiosity somewhere new.</h3>
-              <p>
-                Learn at your pace, ask follow-up questions, and connect the
-                dots.
-              </p>
-              <div className="explore-visual">
-                <div className="explore-path">
-                  <span />
-                  <span />
-                  <span />
-                  <span />
-                </div>
-                <div className="explore-center">
-                  <Sparkles size={22} />
-                </div>
-                <span className="explore-tag tag-a">WHY?</span>
-                <span className="explore-tag tag-b">WHAT IF?</span>
-                <span className="explore-tag tag-c">HOW?</span>
-              </div>
-            </article>
-          </div>
-        </section>
-        <section
-          className="landing-demo"
-          id="preview"
-        >
-          <div className="demo-inner">
-            <div className="demo-copy">
-              <div className="section-eyebrow">YOUR SPACE, YOUR PACE</div>
-              <h2>
-                A conversation
-                <br />
-                that goes <span>somewhere.</span>
-              </h2>
-              <p>
-                Pick a prompt, find your starting point, and let the next
-                question lead the way. Your chat history stays ready for when
-                inspiration comes back.
-              </p>
-              <ul>
-                <li>
-                  <Check size={16} /> Start with a question, big or small
-                </li>
-                <li>
-                  <Check size={16} /> Keep your conversations together
-                </li>
-                <li>
-                  <Check size={16} /> Return whenever inspiration strikes
-                </li>
-              </ul>
               <button
-                className="hero-primary"
+                type="button"
                 onClick={() => onStart('signup')}
               >
-                Meet your AI <ArrowRight size={17} />
+                Create account to try it <ArrowRight size={16} />
               </button>
             </div>
-            <div className="demo-card">
-              <div className="demo-card-top">
-                <BrandMark />
-                <div>
-                  <strong>A fresh perspective</strong>
-                  <span>AN EXAMPLE CONVERSATION</span>
-                </div>
-                <Ellipsis size={20} />
-              </div>
-              <div className="demo-question">
-                <span>YOU</span>
+            <p className="gemini-prompt-note">
+              Choose an idea to shape this preview. Sign in to start a real
+              conversation.
+            </p>
+          </section>
+
+          <div className="gemini-hero-foot">
+            <span>NO PERFECT PROMPT REQUIRED</span>
+            <span>
+              JUST START SOMEWHERE <ArrowRight size={13} />
+            </span>
+          </div>
+        </section>
+
+        <section
+          className="gemini-ways"
+          id="ways"
+        >
+          <div className="gemini-section-intro">
+            <p className="gemini-section-label">
+              A CONVERSATION CAN GO MANY PLACES
+            </p>
+            <h2>
+              Think it through.
+              <br />
+              <em>Make something.</em>
+            </h2>
+            <p>
+              Use one space to get unstuck, shape an idea, or follow a question
+              a little further.
+            </p>
+          </div>
+          <div className="gemini-ability-list">
+            <article className="gemini-ability-row">
+              <span className="gemini-ability-number">01</span>
+              <span className="gemini-ability-icon">
+                <Lightbulb size={21} />
+              </span>
+              <div>
+                <span className="gemini-ability-kind">THINK</span>
+                <h3>Make the complicated feel clearer.</h3>
                 <p>
-                  How do I turn a big goal into something I can start today?
+                  Break down big questions, compare perspectives, and find a way
+                  into a difficult subject.
                 </p>
               </div>
-              <div className="demo-answer">
-                <div className="demo-answer-icon">
-                  <Sparkles size={16} />
-                </div>
-                <div>
-                  <span>GEMINI</span>
-                  <p>
-                    Make it small enough to begin. Try this simple three-step
-                    reset:
-                  </p>
-                  <div className="demo-steps">
+              <span
+                className="gemini-ability-mark"
+                aria-hidden="true"
+              >
+                ↗
+              </span>
+            </article>
+            <article className="gemini-ability-row">
+              <span className="gemini-ability-number">02</span>
+              <span className="gemini-ability-icon">
+                <Code2 size={21} />
+              </span>
+              <div>
+                <span className="gemini-ability-kind">CREATE</span>
+                <h3>Move from a blank page to a first draft.</h3>
+                <p>
+                  Brainstorm, write, code, and give an unfinished idea somewhere
+                  to go.
+                </p>
+              </div>
+              <span
+                className="gemini-ability-mark"
+                aria-hidden="true"
+              >
+                ↗
+              </span>
+            </article>
+            <article className="gemini-ability-row">
+              <span className="gemini-ability-number">03</span>
+              <span className="gemini-ability-icon">
+                <Compass size={21} />
+              </span>
+              <div>
+                <span className="gemini-ability-kind">EXPLORE</span>
+                <h3>Follow your curiosity a little further.</h3>
+                <p>
+                  Learn at your pace, ask a follow-up, and connect the dots as
+                  you go.
+                </p>
+              </div>
+              <span
+                className="gemini-ability-mark"
+                aria-hidden="true"
+              >
+                ↗
+              </span>
+            </article>
+          </div>
+        </section>
+
+        <section
+          className="gemini-conversation"
+          id="conversation"
+        >
+          <div className="gemini-conversation-heading">
+            <p className="gemini-section-label">
+              A SMALL EXAMPLE OF THE BACK-AND-FORTH
+            </p>
+            <h2>
+              Good questions can lead
+              <br />
+              <em>to useful next steps.</em>
+            </h2>
+          </div>
+          <div className="gemini-exchange">
+            <div className="gemini-exchange-question">
+              <span>YOU ASKED</span>
+              <p>
+                “How do I turn a big goal into something I can start today?”
+              </p>
+            </div>
+            <div className="gemini-exchange-answer">
+              <div className="gemini-answer-label">
+                <BrandMark small /> GEMINI <span>EXAMPLE RESPONSE</span>
+              </div>
+              <div>
+                <p>
+                  Make it small enough to begin. Try a simple three-step reset:
+                </p>
+                <ol>
+                  <li>
+                    <span>01</span>
                     <div>
-                      <b>01</b>
-                      <span>
-                        <strong>Name one outcome</strong>
-                        <small>What would progress look like today?</small>
-                      </span>
+                      <strong>Name one outcome</strong>
+                      <small>What would progress look like today?</small>
                     </div>
+                  </li>
+                  <li>
+                    <span>02</span>
                     <div>
-                      <b>02</b>
-                      <span>
-                        <strong>Find the first 15 minutes</strong>
-                        <small>Choose one action you can do now.</small>
-                      </span>
+                      <strong>Find the first 15 minutes</strong>
+                      <small>Choose one action you can do now.</small>
                     </div>
+                  </li>
+                  <li>
+                    <span>03</span>
                     <div>
-                      <b>03</b>
-                      <span>
-                        <strong>Make starting easy</strong>
-                        <small>Prepare what you need, then begin.</small>
-                      </span>
+                      <strong>Make starting easy</strong>
+                      <small>Prepare what you need, then begin.</small>
                     </div>
-                  </div>
-                  <div className="demo-reaction">
-                    <span>
-                      <Check size={13} /> Clear next steps
-                    </span>
-                    <span>Helpful by design ✦</span>
-                  </div>
-                </div>
+                  </li>
+                </ol>
               </div>
             </div>
           </div>
         </section>
+
         <section
-          className="landing-cta section-wrap"
+          className="gemini-endnote"
           id="about"
         >
-          <div className="cta-panel">
-            <div className="cta-decoration cta-decoration-one" />
-            <div className="cta-decoration cta-decoration-two" />
-            <span className="cta-kicker">
-              <Sparkles size={14} /> THE NEXT GOOD IDEA IS YOURS
-            </span>
+          <div>
+            <p className="gemini-section-label">THE NEXT GOOD IDEA IS YOURS</p>
             <h2>
-              Ready when
+              Bring the question.
               <br />
-              <em>you are.</em>
+              <em>We'll find the next step.</em>
             </h2>
             <p>No perfect prompt needed. Just bring your curiosity.</p>
-            <button
-              className="cta-white-button"
-              onClick={() => onStart('signup')}
-            >
-              Create your free account <ArrowRight size={17} />
-            </button>
-            <span className="cta-footnote">
-              A little wonder goes a long way.
-            </span>
           </div>
+          <button
+            className="gemini-endnote-button"
+            type="button"
+            onClick={() => onStart('signup')}
+          >
+            Create your account <ArrowRight size={17} />
+          </button>
         </section>
       </main>
-      <footer className="landing-footer">
+
+      <footer className="landing-footer gemini-footer">
         <a
           className="landing-brand"
           href="#home"
@@ -1320,7 +1230,10 @@ function LandingView({ onStart }: { onStart: (mode: AuthMode) => void }) {
           >
             <Code2 size={14} /> Source code
           </a>
-          <button onClick={() => onStart('signin')}>
+          <button
+            type="button"
+            onClick={() => onStart('signin')}
+          >
             Sign in <ArrowRight size={14} />
           </button>
         </div>
@@ -1328,7 +1241,6 @@ function LandingView({ onStart }: { onStart: (mode: AuthMode) => void }) {
     </div>
   );
 }
-
 function App() {
   const [token, setToken] = useState(
     () => window.localStorage.getItem(TOKEN_KEY) || '',

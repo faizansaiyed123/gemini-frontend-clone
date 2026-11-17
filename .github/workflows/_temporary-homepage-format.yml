@@ -1,0 +1,32 @@
+name: Temporary homepage formatter
+
+on:
+  push:
+    branches: [homepage-design]
+
+permissions:
+  contents: write
+
+jobs:
+  format-homepage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out homepage-design
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install dependencies
+        run: npm install
+      - name: Format only homepage files
+        run: npx prettier --write src/App.tsx src/styles.css
+      - name: Commit formatter output
+        run: |
+          if ! git diff --quiet -- src/App.tsx src/styles.css; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add src/App.tsx src/styles.css
+            git commit -m "Format redesigned homepage files"
+            git push origin HEAD:homepage-design
+          fi
